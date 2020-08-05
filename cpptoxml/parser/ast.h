@@ -205,6 +205,7 @@ struct AST
   QString toString(TokenStream *stream) const;
 
   int kind;
+  bool error;
 
   std::size_t start_token;
   std::size_t end_token;

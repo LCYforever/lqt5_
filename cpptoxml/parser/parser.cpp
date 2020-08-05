@@ -400,8 +400,8 @@ bool Parser::parseTranslationUnit(TranslationUnitAST *&node)
       DeclarationAST *declaration = 0;
       if (parseDeclaration(declaration))
         {
-          ast->declarations =
-            snoc(ast->declarations, declaration, _M_pool);
+		  if(!ast->error)
+			ast->declarations = snoc(ast->declarations, declaration, _M_pool);
         }
       else
         {
@@ -411,12 +411,7 @@ bool Parser::parseTranslationUnit(TranslationUnitAST *&node)
               // skip at least one token
               token_stream.nextToken();
             }
-		  token_stream.rewind((int)startDecl);
-		  const char * text1 = token_stream.token((int)token_stream.cursor()).text + token_stream.token((int)token_stream.cursor()).position;
-          skipUntil(';');
-		  CHECK(';');
-		  const char * text2 = token_stream.token((int)token_stream.cursor()).text + token_stream.token((int)token_stream.cursor()).position;
-		  continue;
+		  skipUntilDeclaration();
         }
     }
 
@@ -846,12 +841,14 @@ bool Parser::parseTemplateDeclaration(DeclarationAST *&node)
 
   CHECK(Token_template);
 
+  TemplateDeclarationAST *ast = CreateNode<TemplateDeclarationAST>(_M_pool);
+
   const ListNode<TemplateParameterAST*> *params = 0;
   if (token_stream.lookAhead() == '<')
     {
       token_stream.nextToken();
-      parseTemplateParameterList(params);
-
+      if(!parseTemplateParameterList(params))
+		  ast->error = 1;
       ADVANCE('>', ">");
     }
 
@@ -861,12 +858,12 @@ bool Parser::parseTemplateDeclaration(DeclarationAST *&node)
       reportError(("expected a declaration"));
     }
 
-  TemplateDeclarationAST *ast = CreateNode<TemplateDeclarationAST>(_M_pool);
   ast->exported = exported;
   ast->template_parameters = params;
   ast->declaration = declaration;
 
   UPDATE_POS(ast, start, token_stream.cursor());
+
   node = ast;
   char* qs = Parser::tokenText(ast).toLatin1().data();
   return true;
@@ -1466,7 +1463,7 @@ bool Parser::parseTemplateParameterList(const ListNode<TemplateParameterAST*> *&
 {
   TemplateParameterAST *param = 0;
   if (!parseTemplateParameter(param))
-    return false;
+	  return false;
 
   node = snoc(node, param, _M_pool);
 
@@ -1478,7 +1475,7 @@ bool Parser::parseTemplateParameterList(const ListNode<TemplateParameterAST*> *&
         {
           syntaxError();
 		  skipUntil('>');
-          break;
+		  return false;
         }
       else
         {
@@ -1546,6 +1543,12 @@ bool Parser::parseTypeParameter(TypeParameterAST *&node)
                 return false;
               }
           }
+		else if (token_stream.lookAhead() == Token_ellipsis)
+		{
+			//template <typename Function, typename... Args>
+			// todo implement variable args
+			return false;
+		}
       }
       break;
 
@@ -1937,8 +1940,11 @@ bool Parser::parseClassSpecifier(TypeSpecifierAST *&node)
             token_stream.nextToken(); // skip at least one token
           skipUntilDeclaration();
         }
-      else
-        ast->member_specs = snoc(ast->member_specs, memSpec, _M_pool);
+	  else
+		{ 
+		  if(!memSpec->error)
+			ast->member_specs = snoc(ast->member_specs, memSpec, _M_pool);
+		}
     }
 
   ADVANCE_NR('}', "}");

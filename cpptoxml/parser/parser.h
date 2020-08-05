@@ -188,18 +188,6 @@ private:
   pool *_M_pool;
   bool _M_block_errors;
 
-  enum ERROR_KIND
-  {
-	  ERROR_UNKNOWN = 0,
-	  ERROR_USING,
-	  ERROR_RIGHTREF,
-	  ERROR_DECLTYPE,
-	  ERROR_TYPENAME,
-	  ERROR_VARARGS,
-	  ERROR_ENUM,
-	  ERROR_DEFAULT
-  };
-
 private:
   Parser(const Parser& source);
   void operator = (const Parser& source);
