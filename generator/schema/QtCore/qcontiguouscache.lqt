@@ -65,11 +65,9 @@ struct Q_CORE_EXPORT QContiguousCacheData
     static QContiguousCacheData *allocateData(int size, int alignment);
     static void freeData(QContiguousCacheData *data);
 
-// #ifdef QT_QCONTIGUOUSCACHE_DEBUG
-//     void dump() const;
-// #endif
-private:
-    Q_DISABLE_COPY(QContiguousCacheData)
+#ifdef QT_QCONTIGUOUSCACHE_DEBUG
+    void dump() const;
+#endif
 };
 
 template <typename T>
@@ -172,295 +170,296 @@ private:
     }
 };
 
-// template <typename T>
-// void QContiguousCache<T>::detach_helper()
-// {
-//     union { QContiguousCacheData *d; QContiguousCacheTypedData<T> *p; } x;
+template <typename T>
+void QContiguousCache<T>::detach_helper()
+{
+    union { QContiguousCacheData *d; QContiguousCacheTypedData<T> *p; } x;
 
-//     x.d = allocateData(d->alloc);
-//     x.d->ref.store(1);
-//     x.d->count = d->count;
-//     x.d->start = d->start;
-//     x.d->offset = d->offset;
-//     x.d->alloc = d->alloc;
-//     x.d->sharable = true;
-//     x.d->reserved = 0;
+    x.d = allocateData(d->alloc);
+    x.d->ref.store(1);
+    x.d->count = d->count;
+    x.d->start = d->start;
+    x.d->offset = d->offset;
+    x.d->alloc = d->alloc;
+    x.d->sharable = true;
+    x.d->reserved = 0;
 
-//     T *dest = x.p->array + x.d->start;
-//     T *src = p->array + d->start;
-//     int oldcount = x.d->count;
-//     while (oldcount--) {
-//         if (QTypeInfo<T>::isComplex) {
-//             new (dest) T(*src);
-//         } else {
-//             *dest = *src;
-//         }
-//         dest++;
-//         if (dest == x.p->array + x.d->alloc)
-//             dest = x.p->array;
-//         src++;
-//         if (src == p->array + d->alloc)
-//             src = p->array;
-//     }
+    T *dest = x.p->array + x.d->start;
+    T *src = p->array + d->start;
+    int oldcount = x.d->count;
+    while (oldcount--) {
+        if (QTypeInfo<T>::isComplex) {
+            new (dest) T(*src);
+        } else {
+            *dest = *src;
+        }
+        dest++;
+        if (dest == x.p->array + x.d->alloc)
+            dest = x.p->array;
+        src++;
+        if (src == p->array + d->alloc)
+            src = p->array;
+    }
 
-//     if (!d->ref.deref())
-//         freeData(p);
-//     d = x.d;
-// }
+    if (!d->ref.deref())
+        freeData(p);
+    d = x.d;
+}
 
-// template <typename T>
-// void QContiguousCache<T>::setCapacity(int asize)
-// {
-//     Q_ASSERT(asize >= 0);
-//     if (asize == d->alloc)
-//         return;
-//     detach();
-//     union { QContiguousCacheData *d; QContiguousCacheTypedData<T> *p; } x;
-//     x.d = allocateData(asize);
-//     x.d->alloc = asize;
-//     x.d->count = qMin(d->count, asize);
-//     x.d->offset = d->offset + d->count - x.d->count;
-//     if(asize)
-//         x.d->start = x.d->offset % x.d->alloc;
-//     else
-//         x.d->start = 0;
+template <typename T>
+void QContiguousCache<T>::setCapacity(int asize)
+{
+    Q_ASSERT(asize >= 0);
+    if (asize == d->alloc)
+        return;
+    detach();
+    union { QContiguousCacheData *d; QContiguousCacheTypedData<T> *p; } x;
+    x.d = allocateData(asize);
+    x.d->ref.store(1);
+    x.d->alloc = asize;
+    x.d->count = qMin(d->count, asize);
+    x.d->offset = d->offset + d->count - x.d->count;
+    if(asize)
+        x.d->start = x.d->offset % x.d->alloc;
+    else
+        x.d->start = 0;
 
-//     int oldcount = x.d->count;
-//     if(oldcount)
-//     {
-//         T *dest = x.p->array + (x.d->start + x.d->count-1) % x.d->alloc;
-//         T *src = p->array + (d->start + d->count-1) % d->alloc;
-//         while (oldcount--) {
-//             if (QTypeInfo<T>::isComplex) {
-//                 new (dest) T(*src);
-//             } else {
-//                 *dest = *src;
-//             }
-//             if (dest == x.p->array)
-//                 dest = x.p->array + x.d->alloc;
-//             dest--;
-//             if (src == p->array)
-//                 src = p->array + d->alloc;
-//             src--;
-//         }
-//     }
-//     /* free old */
-//     freeData(p);
-//     d = x.d;
-// }
+    int oldcount = x.d->count;
+    if(oldcount)
+    {
+        T *dest = x.p->array + (x.d->start + x.d->count-1) % x.d->alloc;
+        T *src = p->array + (d->start + d->count-1) % d->alloc;
+        while (oldcount--) {
+            if (QTypeInfo<T>::isComplex) {
+                new (dest) T(*src);
+            } else {
+                *dest = *src;
+            }
+            if (dest == x.p->array)
+                dest = x.p->array + x.d->alloc;
+            dest--;
+            if (src == p->array)
+                src = p->array + d->alloc;
+            src--;
+        }
+    }
+    /* free old */
+    freeData(p);
+    d = x.d;
+}
 
-// template <typename T>
-// void QContiguousCache<T>::clear()
-// {
-//     if (d->ref.load() == 1) {
-//         if (QTypeInfo<T>::isComplex) {
-//             int oldcount = d->count;
-//             T * i = p->array + d->start;
-//             T * e = p->array + d->alloc;
-//             while (oldcount--) {
-//                 i->~T();
-//                 i++;
-//                 if (i == e)
-//                     i = p->array;
-//             }
-//         }
-//         d->count = d->start = d->offset = 0;
-//     } else {
-//         union { QContiguousCacheData *d; QContiguousCacheTypedData<T> *p; } x;
-//         x.d = allocateData(d->alloc);
-//         x.d->ref.store(1);
-//         x.d->alloc = d->alloc;
-//         x.d->count = x.d->start = x.d->offset = 0;
-//         x.d->sharable = true;
-//         if (!d->ref.deref()) freeData(p);
-//         d = x.d;
-//     }
-// }
+template <typename T>
+void QContiguousCache<T>::clear()
+{
+    if (d->ref.load() == 1) {
+        if (QTypeInfo<T>::isComplex) {
+            int oldcount = d->count;
+            T * i = p->array + d->start;
+            T * e = p->array + d->alloc;
+            while (oldcount--) {
+                i->~T();
+                i++;
+                if (i == e)
+                    i = p->array;
+            }
+        }
+        d->count = d->start = d->offset = 0;
+    } else {
+        union { QContiguousCacheData *d; QContiguousCacheTypedData<T> *p; } x;
+        x.d = allocateData(d->alloc);
+        x.d->ref.store(1);
+        x.d->alloc = d->alloc;
+        x.d->count = x.d->start = x.d->offset = 0;
+        x.d->sharable = true;
+        if (!d->ref.deref()) freeData(p);
+        d = x.d;
+    }
+}
 
-// template <typename T>
-// inline QContiguousCacheData *QContiguousCache<T>::allocateData(int aalloc)
-// {
-//     return QContiguousCacheData::allocateData(sizeOfTypedData() + (aalloc - 1) * sizeof(T), alignOfTypedData());
-// }
+template <typename T>
+inline QContiguousCacheData *QContiguousCache<T>::allocateData(int aalloc)
+{
+    return QContiguousCacheData::allocateData(sizeOfTypedData() + (aalloc - 1) * sizeof(T), alignOfTypedData());
+}
 
-// template <typename T>
-// QContiguousCache<T>::QContiguousCache(int cap)
-// {
-//     Q_ASSERT(cap >= 0);
-//     d = allocateData(cap);
-//     d->ref.store(1);
-//     d->alloc = cap;
-//     d->count = d->start = d->offset = 0;
-//     d->sharable = true;
-// }
+template <typename T>
+QContiguousCache<T>::QContiguousCache(int cap)
+{
+    Q_ASSERT(cap >= 0);
+    d = allocateData(cap);
+    d->ref.store(1);
+    d->alloc = cap;
+    d->count = d->start = d->offset = 0;
+    d->sharable = true;
+}
 
-// template <typename T>
-// QContiguousCache<T> &QContiguousCache<T>::operator=(const QContiguousCache<T> &other)
-// {
-//     other.d->ref.ref();
-//     if (!d->ref.deref())
-//         freeData(p);
-//     d = other.d;
-//     if (!d->sharable)
-//         detach_helper();
-//     return *this;
-// }
+template <typename T>
+QContiguousCache<T> &QContiguousCache<T>::operator=(const QContiguousCache<T> &other)
+{
+    other.d->ref.ref();
+    if (!d->ref.deref())
+        freeData(p);
+    d = other.d;
+    if (!d->sharable)
+        detach_helper();
+    return *this;
+}
 
-// template <typename T>
-// bool QContiguousCache<T>::operator==(const QContiguousCache<T> &other) const
-// {
-//     if (other.d == d)
-//         return true;
-//     if (other.d->start != d->start
-//             || other.d->count != d->count
-//             || other.d->offset != d->offset
-//             || other.d->alloc != d->alloc)
-//         return false;
-//     for (int i = firstIndex(); i <= lastIndex(); ++i)
-//         if (!(at(i) == other.at(i)))
-//             return false;
-//     return true;
-// }
+template <typename T>
+bool QContiguousCache<T>::operator==(const QContiguousCache<T> &other) const
+{
+    if (other.d == d)
+        return true;
+    if (other.d->start != d->start
+            || other.d->count != d->count
+            || other.d->offset != d->offset
+            || other.d->alloc != d->alloc)
+        return false;
+    for (int i = firstIndex(); i <= lastIndex(); ++i)
+        if (!(at(i) == other.at(i)))
+            return false;
+    return true;
+}
 
-// template <typename T>
-// void QContiguousCache<T>::freeData(Data *x)
-// {
-//     if (QTypeInfo<T>::isComplex) {
-//         int oldcount = d->count;
-//         T * i = p->array + d->start;
-//         T * e = p->array + d->alloc;
-//         while (oldcount--) {
-//             i->~T();
-//             i++;
-//             if (i == e)
-//                 i = p->array;
-//         }
-//     }
-//     x->freeData(x);
-// }
-// template <typename T>
-// void QContiguousCache<T>::append(const T &value)
-// {
-//     if (!d->alloc)
-//         return;     // zero capacity
-//     detach();
-//     if (QTypeInfo<T>::isComplex) {
-//         if (d->count == d->alloc)
-//             (p->array + (d->start+d->count) % d->alloc)->~T();
-//         new (p->array + (d->start+d->count) % d->alloc) T(value);
-//     } else {
-//         p->array[(d->start+d->count) % d->alloc] = value;
-//     }
+template <typename T>
+void QContiguousCache<T>::freeData(Data *x)
+{
+    if (QTypeInfo<T>::isComplex) {
+        int oldcount = d->count;
+        T * i = p->array + d->start;
+        T * e = p->array + d->alloc;
+        while (oldcount--) {
+            i->~T();
+            i++;
+            if (i == e)
+                i = p->array;
+        }
+    }
+    x->freeData(x);
+}
+template <typename T>
+void QContiguousCache<T>::append(const T &value)
+{
+    if (!d->alloc)
+        return;     // zero capacity
+    detach();
+    if (QTypeInfo<T>::isComplex) {
+        if (d->count == d->alloc)
+            (p->array + (d->start+d->count) % d->alloc)->~T();
+        new (p->array + (d->start+d->count) % d->alloc) T(value);
+    } else {
+        p->array[(d->start+d->count) % d->alloc] = value;
+    }
 
-//     if (d->count == d->alloc) {
-//         d->start++;
-//         d->start %= d->alloc;
-//         d->offset++;
-//     } else {
-//         d->count++;
-//     }
-// }
+    if (d->count == d->alloc) {
+        d->start++;
+        d->start %= d->alloc;
+        d->offset++;
+    } else {
+        d->count++;
+    }
+}
 
-// template<typename T>
-// void QContiguousCache<T>::prepend(const T &value)
-// {
-//     if (!d->alloc)
-//         return;     // zero capacity
-//     detach();
-//     if (d->start)
-//         d->start--;
-//     else
-//         d->start = d->alloc-1;
-//     d->offset--;
+template<typename T>
+void QContiguousCache<T>::prepend(const T &value)
+{
+    if (!d->alloc)
+        return;     // zero capacity
+    detach();
+    if (d->start)
+        d->start--;
+    else
+        d->start = d->alloc-1;
+    d->offset--;
 
-//     if (d->count != d->alloc)
-//         d->count++;
-//     else
-//         if (d->count == d->alloc)
-//             (p->array + d->start)->~T();
+    if (d->count != d->alloc)
+        d->count++;
+    else
+        if (d->count == d->alloc)
+            (p->array + d->start)->~T();
 
-//     if (QTypeInfo<T>::isComplex)
-//         new (p->array + d->start) T(value);
-//     else
-//         p->array[d->start] = value;
-// }
+    if (QTypeInfo<T>::isComplex)
+        new (p->array + d->start) T(value);
+    else
+        p->array[d->start] = value;
+}
 
-// template<typename T>
-// void QContiguousCache<T>::insert(int pos, const T &value)
-// {
-//     Q_ASSERT_X(pos >= 0 && pos < INT_MAX, "QContiguousCache<T>::insert", "index out of range");
-//     if (!d->alloc)
-//         return;     // zero capacity
-//     detach();
-//     if (containsIndex(pos)) {
-//         if (QTypeInfo<T>::isComplex) {
-//             (p->array + pos % d->alloc)->~T();
-//             new (p->array + pos % d->alloc) T(value);
-//         } else {
-//             p->array[pos % d->alloc] = value;
-//         }
-//     } else if (pos == d->offset-1)
-//         prepend(value);
-//     else if (pos == d->offset+d->count)
-//         append(value);
-//     else {
-//         // we don't leave gaps.
-//         clear();
-//         d->offset = pos;
-//         d->start = pos % d->alloc;
-//         d->count = 1;
-//         if (QTypeInfo<T>::isComplex)
-//             new (p->array + d->start) T(value);
-//         else
-//             p->array[d->start] = value;
-//     }
-// }
+template<typename T>
+void QContiguousCache<T>::insert(int pos, const T &value)
+{
+    Q_ASSERT_X(pos >= 0 && pos < INT_MAX, "QContiguousCache<T>::insert", "index out of range");
+    if (!d->alloc)
+        return;     // zero capacity
+    detach();
+    if (containsIndex(pos)) {
+        if (QTypeInfo<T>::isComplex) {
+            (p->array + pos % d->alloc)->~T();
+            new (p->array + pos % d->alloc) T(value);
+        } else {
+            p->array[pos % d->alloc] = value;
+        }
+    } else if (pos == d->offset-1)
+        prepend(value);
+    else if (pos == d->offset+d->count)
+        append(value);
+    else {
+        // we don't leave gaps.
+        clear();
+        d->offset = pos;
+        d->start = pos % d->alloc;
+        d->count = 1;
+        if (QTypeInfo<T>::isComplex)
+            new (p->array + d->start) T(value);
+        else
+            p->array[d->start] = value;
+    }
+}
 
-// template <typename T>
-// inline const T &QContiguousCache<T>::at(int pos) const
-// { Q_ASSERT_X(pos >= d->offset && pos - d->offset < d->count, "QContiguousCache<T>::at", "index out of range"); return p->array[pos % d->alloc]; }
-// template <typename T>
-// inline const T &QContiguousCache<T>::operator[](int pos) const
-// { Q_ASSERT_X(pos >= d->offset && pos - d->offset < d->count, "QContiguousCache<T>::at", "index out of range"); return p->array[pos % d->alloc]; }
+template <typename T>
+inline const T &QContiguousCache<T>::at(int pos) const
+{ Q_ASSERT_X(pos >= d->offset && pos - d->offset < d->count, "QContiguousCache<T>::at", "index out of range"); return p->array[pos % d->alloc]; }
+template <typename T>
+inline const T &QContiguousCache<T>::operator[](int pos) const
+{ Q_ASSERT_X(pos >= d->offset && pos - d->offset < d->count, "QContiguousCache<T>::at", "index out of range"); return p->array[pos % d->alloc]; }
 
-// template <typename T>
-// inline T &QContiguousCache<T>::operator[](int pos)
-// {
-//     detach();
-//     if (!containsIndex(pos))
-//         insert(pos, T());
-//     return p->array[pos % d->alloc];
-// }
+template <typename T>
+inline T &QContiguousCache<T>::operator[](int pos)
+{
+    detach();
+    if (!containsIndex(pos))
+        insert(pos, T());
+    return p->array[pos % d->alloc];
+}
 
-// template <typename T>
-// inline void QContiguousCache<T>::removeFirst()
-// {
-//     Q_ASSERT(d->count > 0);
-//     detach();
-//     d->count--;
-//     if (QTypeInfo<T>::isComplex)
-//         (p->array + d->start)->~T();
-//     d->start = (d->start + 1) % d->alloc;
-//     d->offset++;
-// }
+template <typename T>
+inline void QContiguousCache<T>::removeFirst()
+{
+    Q_ASSERT(d->count > 0);
+    detach();
+    d->count--;
+    if (QTypeInfo<T>::isComplex)
+        (p->array + d->start)->~T();
+    d->start = (d->start + 1) % d->alloc;
+    d->offset++;
+}
 
-// template <typename T>
-// inline void QContiguousCache<T>::removeLast()
-// {
-//     Q_ASSERT(d->count > 0);
-//     detach();
-//     d->count--;
-//     if (QTypeInfo<T>::isComplex)
-//         (p->array + (d->start + d->count) % d->alloc)->~T();
-// }
+template <typename T>
+inline void QContiguousCache<T>::removeLast()
+{
+    Q_ASSERT(d->count > 0);
+    detach();
+    d->count--;
+    if (QTypeInfo<T>::isComplex)
+        (p->array + (d->start + d->count) % d->alloc)->~T();
+}
 
-// template <typename T>
-// inline T QContiguousCache<T>::takeFirst()
-// { T t = first(); removeFirst(); return t; }
+template <typename T>
+inline T QContiguousCache<T>::takeFirst()
+{ T t = first(); removeFirst(); return t; }
 
-// template <typename T>
-// inline T QContiguousCache<T>::takeLast()
-// { T t = last(); removeLast(); return t; }
+template <typename T>
+inline T QContiguousCache<T>::takeLast()
+{ T t = last(); removeLast(); return t; }
 
 QT_END_NAMESPACE
 

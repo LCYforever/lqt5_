@@ -62,9 +62,9 @@ public:
     ~QStorageInfo();
 
     QStorageInfo &operator=(const QStorageInfo &other);
-// #ifdef Q_COMPILER_RVALUE_REFS
-//     QStorageInfo &operator=(QStorageInfo &&other) Q_DECL_NOTHROW { swap(other); return *this; }
-// #endif
+#ifdef Q_COMPILER_RVALUE_REFS
+    QStorageInfo &operator=(QStorageInfo &&other) Q_DECL_NOTHROW { swap(other); return *this; }
+#endif
 
     inline void swap(QStorageInfo &other) Q_DECL_NOTHROW
     { qSwap(d, other.d); }
@@ -93,27 +93,27 @@ public:
     static QList<QStorageInfo> mountedVolumes();
     static QStorageInfo root();
 
-// private:
-//     friend class QStorageInfoPrivate;
-//     friend bool operator==(const QStorageInfo &first, const QStorageInfo &second);
-//     friend Q_CORE_EXPORT QDebug operator<<(QDebug, const QStorageInfo &);
-//     QExplicitlySharedDataPointer<QStorageInfoPrivate> d;
+private:
+    friend class QStorageInfoPrivate;
+    friend bool operator==(const QStorageInfo &first, const QStorageInfo &second);
+    friend Q_CORE_EXPORT QDebug operator<<(QDebug, const QStorageInfo &);
+    QExplicitlySharedDataPointer<QStorageInfoPrivate> d;
 };
 
-// inline bool operator==(const QStorageInfo &first, const QStorageInfo &second)
-// {
-//     if (first.d == second.d)
-//         return true;
-//     return first.device() == second.device() && first.rootPath() == second.rootPath();
-// }
+inline bool operator==(const QStorageInfo &first, const QStorageInfo &second)
+{
+    if (first.d == second.d)
+        return true;
+    return first.device() == second.device() && first.rootPath() == second.rootPath();
+}
 
-// inline bool operator!=(const QStorageInfo &first, const QStorageInfo &second)
-// {
-//     return !(first == second);
-// }
+inline bool operator!=(const QStorageInfo &first, const QStorageInfo &second)
+{
+    return !(first == second);
+}
 
-// inline bool QStorageInfo::isRoot() const
-// { return *this == QStorageInfo::root(); }
+inline bool QStorageInfo::isRoot() const
+{ return *this == QStorageInfo::root(); }
 
 Q_DECLARE_SHARED(QStorageInfo)
 

@@ -42,9 +42,10 @@
 
 #include <QtCore/qglobal.lqt>
 
+
 QT_BEGIN_NAMESPACE
 
-// #if QT_CONFIG(thread)
+#if QT_CONFIG(thread)
 
 class QDeadlineTimer;
 class QWaitConditionPrivate;
@@ -75,27 +76,27 @@ private:
     QWaitConditionPrivate * d;
 };
 
-// #else
+#else
 
-// class QMutex;
-// class Q_CORE_EXPORT QWaitCondition
-// {
-// public:
-//     QWaitCondition() {}
-//     ~QWaitCondition() {}
+class QMutex;
+class Q_CORE_EXPORT QWaitCondition
+{
+public:
+    QWaitCondition() {}
+    ~QWaitCondition() {}
 
-//     bool wait(QMutex *mutex, unsigned long time = ULONG_MAX)
-//     {
-//         Q_UNUSED(mutex);
-//         Q_UNUSED(time);
-//         return true;
-//     }
+    bool wait(QMutex *mutex, unsigned long time = ULONG_MAX)
+    {
+        Q_UNUSED(mutex);
+        Q_UNUSED(time);
+        return true;
+    }
 
-//     void wakeOne() {}
-//     void wakeAll() {}
-// };
+    void wakeOne() {}
+    void wakeAll() {}
+};
 
-// #endif // QT_CONFIG(thread)
+#endif // QT_CONFIG(thread)
 
 QT_END_NAMESPACE
 

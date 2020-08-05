@@ -48,56 +48,57 @@
 #include <QtCore/qstringliteral.lqt>
 #include <QtCore/qstringalgorithms.lqt>
 
+
 QT_BEGIN_NAMESPACE
 
 class QString;
 class QStringRef;
 
-// namespace QtPrivate {
-// template <typename Char>
-// struct IsCompatibleCharTypeHelper
-//     : std::integral_constant<bool,
-//                              std::is_same<Char, QChar>::value ||
-//                              std::is_same<Char, ushort>::value ||
-// #if defined(Q_COMPILER_UNICODE_STRINGS)
-//                              std::is_same<Char, char16_t>::value ||
-// #endif
-//                              (std::is_same<Char, wchar_t>::value && sizeof(wchar_t) == sizeof(QChar))> {};
-// template <typename Char>
-// struct IsCompatibleCharType
-//     : IsCompatibleCharTypeHelper<typename std::remove_cv<typename std::remove_reference<Char>::type>::type> {};
+namespace QtPrivate {
+template <typename Char>
+struct IsCompatibleCharTypeHelper
+    : std::integral_constant<bool,
+                             std::is_same<Char, QChar>::value ||
+                             std::is_same<Char, ushort>::value ||
+#if defined(Q_COMPILER_UNICODE_STRINGS)
+                             std::is_same<Char, char16_t>::value ||
+#endif
+                             (std::is_same<Char, wchar_t>::value && sizeof(wchar_t) == sizeof(QChar))> {};
+template <typename Char>
+struct IsCompatibleCharType
+    : IsCompatibleCharTypeHelper<typename std::remove_cv<typename std::remove_reference<Char>::type>::type> {};
 
-// template <typename Array>
-// struct IsCompatibleArrayHelper : std::false_type {};
-// template <typename Char, size_t N>
-// struct IsCompatibleArrayHelper<Char[N]>
-//     : IsCompatibleCharType<Char> {};
-// template <typename Array>
-// struct IsCompatibleArray
-//     : IsCompatibleArrayHelper<typename std::remove_cv<typename std::remove_reference<Array>::type>::type> {};
+template <typename Array>
+struct IsCompatibleArrayHelper : std::false_type {};
+template <typename Char, size_t N>
+struct IsCompatibleArrayHelper<Char[N]>
+    : IsCompatibleCharType<Char> {};
+template <typename Array>
+struct IsCompatibleArray
+    : IsCompatibleArrayHelper<typename std::remove_cv<typename std::remove_reference<Array>::type>::type> {};
 
-// template <typename Pointer>
-// struct IsCompatiblePointerHelper : std::false_type {};
-// template <typename Char>
-// struct IsCompatiblePointerHelper<Char*>
-//     : IsCompatibleCharType<Char> {};
-// template <typename Pointer>
-// struct IsCompatiblePointer
-//     : IsCompatiblePointerHelper<typename std::remove_cv<typename std::remove_reference<Pointer>::type>::type> {};
+template <typename Pointer>
+struct IsCompatiblePointerHelper : std::false_type {};
+template <typename Char>
+struct IsCompatiblePointerHelper<Char*>
+    : IsCompatibleCharType<Char> {};
+template <typename Pointer>
+struct IsCompatiblePointer
+    : IsCompatiblePointerHelper<typename std::remove_cv<typename std::remove_reference<Pointer>::type>::type> {};
 
-// template <typename T>
-// struct IsCompatibleStdBasicStringHelper : std::false_type {};
-// template <typename Char, typename...Args>
-// struct IsCompatibleStdBasicStringHelper<std::basic_string<Char, Args...> >
-//     : IsCompatibleCharType<Char> {};
+template <typename T>
+struct IsCompatibleStdBasicStringHelper : std::false_type {};
+template <typename Char, typename...Args>
+struct IsCompatibleStdBasicStringHelper<std::basic_string<Char, Args...> >
+    : IsCompatibleCharType<Char> {};
 
-// template <typename T>
-// struct IsCompatibleStdBasicString
-//     : IsCompatibleStdBasicStringHelper<
-//         typename std::remove_cv<typename std::remove_reference<T>::type>::type
-//       > {};
+template <typename T>
+struct IsCompatibleStdBasicString
+    : IsCompatibleStdBasicStringHelper<
+        typename std::remove_cv<typename std::remove_reference<T>::type>::type
+      > {};
 
-// } // namespace QtPrivate
+} // namespace QtPrivate
 
 class QStringView
 {
@@ -120,51 +121,51 @@ public:
     typedef std::reverse_iterator<iterator> reverse_iterator;
     typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
 
-// private:
-//     template <typename Char>
-//     using if_compatible_char = typename std::enable_if<QtPrivate::IsCompatibleCharType<Char>::value, bool>::type;
+private:
+    template <typename Char>
+    using if_compatible_char = typename std::enable_if<QtPrivate::IsCompatibleCharType<Char>::value, bool>::type;
 
-//     template <typename Array>
-//     using if_compatible_array = typename std::enable_if<QtPrivate::IsCompatibleArray<Array>::value, bool>::type;
+    template <typename Array>
+    using if_compatible_array = typename std::enable_if<QtPrivate::IsCompatibleArray<Array>::value, bool>::type;
 
-//     template <typename Pointer>
-//     using if_compatible_pointer = typename std::enable_if<QtPrivate::IsCompatiblePointer<Pointer>::value, bool>::type;
+    template <typename Pointer>
+    using if_compatible_pointer = typename std::enable_if<QtPrivate::IsCompatiblePointer<Pointer>::value, bool>::type;
 
-//     template <typename T>
-//     using if_compatible_string = typename std::enable_if<QtPrivate::IsCompatibleStdBasicString<T>::value, bool>::type;
+    template <typename T>
+    using if_compatible_string = typename std::enable_if<QtPrivate::IsCompatibleStdBasicString<T>::value, bool>::type;
 
-//     template <typename T>
-//     using if_compatible_qstring_like = typename std::enable_if<std::is_same<T, QString>::value || std::is_same<T, QStringRef>::value, bool>::type;
+    template <typename T>
+    using if_compatible_qstring_like = typename std::enable_if<std::is_same<T, QString>::value || std::is_same<T, QStringRef>::value, bool>::type;
 
-//     template <typename Char, size_t N>
-//     static Q_DECL_CONSTEXPR qsizetype lengthHelperArray(const Char (&)[N]) Q_DECL_NOTHROW
-//     {
-//         return qsizetype(N - 1);
-//     }
+    template <typename Char, size_t N>
+    static Q_DECL_CONSTEXPR qsizetype lengthHelperArray(const Char (&)[N]) Q_DECL_NOTHROW
+    {
+        return qsizetype(N - 1);
+    }
 
-//     template <typename Char>
-//     static qsizetype lengthHelperPointer(const Char *str) Q_DECL_NOTHROW
-//     {
-// #if defined(Q_CC_GNU) && !defined(Q_CC_CLANG) && !defined(Q_CC_INTEL)
-//         if (__builtin_constant_p(*str)) {
-//             qsizetype result = 0;
-//             while (*str++)
-//                 ++result;
-//             return result;
-//         }
-// #endif
-//         return QtPrivate::qustrlen(reinterpret_cast<const ushort *>(str));
-//     }
-//     static qsizetype lengthHelperPointer(const QChar *str) Q_DECL_NOTHROW
-//     {
-//         return QtPrivate::qustrlen(reinterpret_cast<const ushort *>(str));
-//     }
+    template <typename Char>
+    static qsizetype lengthHelperPointer(const Char *str) Q_DECL_NOTHROW
+    {
+#if defined(Q_CC_GNU) && !defined(Q_CC_CLANG) && !defined(Q_CC_INTEL)
+        if (__builtin_constant_p(*str)) {
+            qsizetype result = 0;
+            while (*str++)
+                ++result;
+            return result;
+        }
+#endif
+        return QtPrivate::qustrlen(reinterpret_cast<const ushort *>(str));
+    }
+    static qsizetype lengthHelperPointer(const QChar *str) Q_DECL_NOTHROW
+    {
+        return QtPrivate::qustrlen(reinterpret_cast<const ushort *>(str));
+    }
 
-//     template <typename Char>
-//     static const storage_type *castHelper(const Char *str) Q_DECL_NOTHROW
-//     { return reinterpret_cast<const storage_type*>(str); }
-//     static Q_DECL_CONSTEXPR const storage_type *castHelper(const storage_type *str) Q_DECL_NOTHROW
-//     { return str; }
+    template <typename Char>
+    static const storage_type *castHelper(const Char *str) Q_DECL_NOTHROW
+    { return reinterpret_cast<const storage_type*>(str); }
+    static Q_DECL_CONSTEXPR const storage_type *castHelper(const storage_type *str) Q_DECL_NOTHROW
+    { return str; }
 
 public:
     Q_DECL_CONSTEXPR QStringView() Q_DECL_NOTHROW
@@ -181,13 +182,13 @@ public:
     Q_DECL_CONSTEXPR QStringView(const Char *f, const Char *l)
         : QStringView(f, l - f) {}
 
-// #ifdef Q_CLANG_QDOC
-//     template <typename Char, size_t N>
-//     Q_DECL_CONSTEXPR QStringView(const Char (&array)[N]) Q_DECL_NOTHROW;
+#ifdef Q_CLANG_QDOC
+    template <typename Char, size_t N>
+    Q_DECL_CONSTEXPR QStringView(const Char (&array)[N]) Q_DECL_NOTHROW;
 
-//     template <typename Char>
-//     Q_DECL_CONSTEXPR QStringView(const Char *str) Q_DECL_NOTHROW;
-// #else
+    template <typename Char>
+    Q_DECL_CONSTEXPR QStringView(const Char *str) Q_DECL_NOTHROW;
+#else
     template <typename Array, if_compatible_array<Array> = true>
     Q_DECL_CONSTEXPR QStringView(const Array &str) Q_DECL_NOTHROW
         : QStringView(str, lengthHelperArray(str)) {}
@@ -195,16 +196,16 @@ public:
     template <typename Pointer, if_compatible_pointer<Pointer> = true>
     Q_DECL_CONSTEXPR QStringView(const Pointer &str) Q_DECL_NOTHROW
         : QStringView(str, str ? lengthHelperPointer(str) : 0) {}
-// #endif
+#endif
 
-// #ifdef Q_CLANG_QDOC
-//     QStringView(const QString &str) Q_DECL_NOTHROW;
-//     QStringView(const QStringRef &str) Q_DECL_NOTHROW;
-// #else
+#ifdef Q_CLANG_QDOC
+    QStringView(const QString &str) Q_DECL_NOTHROW;
+    QStringView(const QStringRef &str) Q_DECL_NOTHROW;
+#else
     template <typename String, if_compatible_qstring_like<String> = true>
     QStringView(const String &str) Q_DECL_NOTHROW
         : QStringView(str.isNull() ? nullptr : str.data(), qsizetype(str.size())) {}
-// #endif
+#endif
 
     template <typename StdBasicString, if_compatible_string<StdBasicString> = true>
     QStringView(const StdBasicString &str) Q_DECL_NOTHROW
@@ -295,17 +296,17 @@ public:
     { return Q_ASSERT(int(size()) == size()), int(size()); }
     Q_REQUIRED_RESULT Q_DECL_CONSTEXPR QChar first() const { return front(); }
     Q_REQUIRED_RESULT Q_DECL_CONSTEXPR QChar last()  const { return back(); }
-// private:
-//     qsizetype m_size;
-//     const storage_type *m_data;
+private:
+    qsizetype m_size;
+    const storage_type *m_data;
 };
 Q_DECLARE_TYPEINFO(QStringView, Q_PRIMITIVE_TYPE);
 
-// template <typename QStringLike, typename std::enable_if<
-//     std::is_same<QStringLike, QString>::value || std::is_same<QStringLike, QStringRef>::value,
-//     bool>::type = true>
-// inline QStringView qToStringViewIgnoringNull(const QStringLike &s) Q_DECL_NOTHROW
-// { return QStringView(s.data(), s.size()); }
+template <typename QStringLike, typename std::enable_if<
+    std::is_same<QStringLike, QString>::value || std::is_same<QStringLike, QStringRef>::value,
+    bool>::type = true>
+inline QStringView qToStringViewIgnoringNull(const QStringLike &s) Q_DECL_NOTHROW
+{ return QStringView(s.data(), s.size()); }
 
 QT_END_NAMESPACE
 

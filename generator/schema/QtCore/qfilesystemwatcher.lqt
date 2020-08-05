@@ -51,7 +51,7 @@ class QFileSystemWatcherPrivate;
 
 class Q_CORE_EXPORT QFileSystemWatcher : public QObject
 {
-    LQT_OBJECT Q_OBJECT
+    LQT_OBJECT O_OBJECT
     Q_DECLARE_PRIVATE(QFileSystemWatcher)
 
 public:

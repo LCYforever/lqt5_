@@ -47,27 +47,26 @@
 #include <QtCore/qstring.lqt>
 #include <QtCore/qstringview.lqt>
 
-// // See qcborcommon.h for why we check
-// #if defined(QT_X11_DEFINES_FOUND)
-// #  undef True
-// #  undef False
-// #endif
+// See qcborcommon.h for why we check
+#if defined(QT_X11_DEFINES_FOUND)
+#  undef True
+#  undef False
+#endif
 
 QT_BEGIN_NAMESPACE
 
 class QIODevice;
 
-enum class QCborNegativeInteger {};
+enum class QCborNegativeInteger : quint64 {};
 
 class QCborStreamWriterPrivate;
 class Q_CORE_EXPORT QCborStreamWriter
 {
-private:
-    Q_DISABLE_COPY(QCborStreamWriter)
 public:
     explicit QCborStreamWriter(QIODevice *device);
     explicit QCborStreamWriter(QByteArray *data);
     ~QCborStreamWriter();
+    Q_DISABLE_COPY(QCborStreamWriter)
 
     void setDevice(QIODevice *device);
     QIODevice *device() const;
@@ -121,9 +120,6 @@ class QCborStreamReaderPrivate;
 class Q_CORE_EXPORT QCborStreamReader
 {
     Q_GADGET
-
-private:
-    Q_DISABLE_COPY(QCborStreamReader)
 public:
     enum Type : quint8 {
         UnsignedInteger     = 0x00,
@@ -162,6 +158,7 @@ public:
     explicit QCborStreamReader(const QByteArray &data);
     explicit QCborStreamReader(QIODevice *device);
     ~QCborStreamReader();
+    Q_DISABLE_COPY(QCborStreamReader)
 
     void setDevice(QIODevice *device);
     QIODevice *device() const;
@@ -243,7 +240,14 @@ private:
     StringResult<QByteArray> _readByteArray_helper();
     qsizetype _currentStringChunkSize() const;
 
-    template <typename FP> FP _toFloatingPoint() const noexcept;
+    template <typename FP> FP _toFloatingPoint() const noexcept
+    {
+        using UInt = typename QIntegerForSizeof<FP>::Unsigned;
+        UInt u = UInt(value64);
+        FP f;
+        memcpy(static_cast<void *>(&f), &u, sizeof(f));
+        return f;
+    }
 
     friend QCborStreamReaderPrivate;
     friend class QCborContainerPrivate;

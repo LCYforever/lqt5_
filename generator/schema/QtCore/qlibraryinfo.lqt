@@ -51,24 +51,24 @@ class QStringList;
 class Q_CORE_EXPORT QLibraryInfo
 {
 public:
-// #if QT_DEPRECATED_SINCE(5, 8)
-//     static QT_DEPRECATED QString licensee();
-//     static QT_DEPRECATED QString licensedProducts();
-// #endif
+#if QT_DEPRECATED_SINCE(5, 8)
+    static QT_DEPRECATED QString licensee();
+    static QT_DEPRECATED QString licensedProducts();
+#endif
 
-// #if QT_CONFIG(datestring)
-// #if QT_DEPRECATED_SINCE(5, 5)
-//     static QT_DEPRECATED QDate buildDate();
-// #endif // QT_DEPRECATED_SINCE(5, 5)
-// #endif // datestring
+#if QT_CONFIG(datestring)
+#if QT_DEPRECATED_SINCE(5, 5)
+    static QT_DEPRECATED QDate buildDate();
+#endif // QT_DEPRECATED_SINCE(5, 5)
+#endif // datestring
 
     static const char * build() Q_DECL_NOTHROW;
 
     static bool isDebugBuild();
 
-// #ifndef QT_BOOTSTRAPPED
+#ifndef QT_BOOTSTRAPPED
     static QVersionNumber version() Q_DECL_NOTHROW Q_DECL_CONST_FUNCTION;
-// #endif
+#endif
 
     enum LibraryLocation
     {
@@ -88,26 +88,26 @@ public:
         TestsPath,
         // Insert new values above this line
         // Please read the comments in qlibraryinfo.cpp before adding
-// #ifdef QT_BUILD_QMAKE
-//         // These are not subject to binary compatibility constraints
-//         SysrootPath,
-//         SysrootifyPrefixPath,
-//         HostBinariesPath,
-//         HostLibrariesPath,
-//         HostDataPath,
-//         TargetSpecPath,
-//         HostSpecPath,
-//         HostPrefixPath,
-//         LastHostPath = HostPrefixPath,
-// #endif
+#ifdef QT_BUILD_QMAKE
+        // These are not subject to binary compatibility constraints
+        SysrootPath,
+        SysrootifyPrefixPath,
+        HostBinariesPath,
+        HostLibrariesPath,
+        HostDataPath,
+        TargetSpecPath,
+        HostSpecPath,
+        HostPrefixPath,
+        LastHostPath = HostPrefixPath,
+#endif
         SettingsPath = 100
     };
     static QString location(LibraryLocation); // ### Qt 6: consider renaming it to path()
-// #ifdef QT_BUILD_QMAKE
-//     enum PathGroup { FinalPaths, EffectivePaths, EffectiveSourcePaths, DevicePaths };
-//     static QString rawLocation(LibraryLocation, PathGroup);
-//     static void reload();
-// #endif
+#ifdef QT_BUILD_QMAKE
+    enum PathGroup { FinalPaths, EffectivePaths, EffectiveSourcePaths, DevicePaths };
+    static QString rawLocation(LibraryLocation, PathGroup);
+    static void reload();
+#endif
 
     static QStringList platformPluginArguments(const QString &platformName);
 

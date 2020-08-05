@@ -46,12 +46,12 @@
 
 QT_BEGIN_NAMESPACE
 
-// #if 0
-// // silence syncqt warnings
-// QT_END_NAMESPACE
-// #pragma qt_sync_skip_header_check
-// #pragma qt_sync_stop_processing
-// #endif
+#if 0
+// silence syncqt warnings
+QT_END_NAMESPACE
+#pragma qt_sync_skip_header_check
+#pragma qt_sync_stop_processing
+#endif
 
 template<int> struct QAtomicOpsSupport { enum { IsSupported = 0 }; };
 template<> struct QAtomicOpsSupport<4> { enum { IsSupported = 1 }; };
@@ -186,7 +186,15 @@ template <typename BaseClass> struct QGenericAtomicOps
     static inline Q_DECL_CONSTEXPR bool isFetchAndStoreWaitFree() Q_DECL_NOTHROW { return false; }
 
     template <typename T, typename X> static Q_ALWAYS_INLINE
-    T fetchAndStoreRelaxed(T &_q_value, X newValue) Q_DECL_NOTHROW;
+    T fetchAndStoreRelaxed(T &_q_value, X newValue) Q_DECL_NOTHROW
+    {
+        // implement fetchAndStore on top of testAndSet
+        Q_FOREVER {
+            T tmp = load(_q_value);
+            if (BaseClass::testAndSetRelaxed(_q_value, tmp, newValue))
+                return tmp;
+        }
+    }
 
     template <typename T, typename X> static Q_ALWAYS_INLINE
     T fetchAndStoreAcquire(T &_q_value, X newValue) Q_DECL_NOTHROW
@@ -213,7 +221,15 @@ template <typename BaseClass> struct QGenericAtomicOps
     static inline Q_DECL_CONSTEXPR bool isFetchAndAddNative() Q_DECL_NOTHROW { return false; }
     static inline Q_DECL_CONSTEXPR bool isFetchAndAddWaitFree() Q_DECL_NOTHROW { return false; }
     template <typename T> static Q_ALWAYS_INLINE
-    T fetchAndAddRelaxed(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd) Q_DECL_NOTHROW;
+    T fetchAndAddRelaxed(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd) Q_DECL_NOTHROW
+    {
+        // implement fetchAndAdd on top of testAndSet
+        Q_FOREVER {
+            T tmp = BaseClass::load(_q_value);
+            if (BaseClass::testAndSetRelaxed(_q_value, tmp, T(tmp + valueToAdd)))
+                return tmp;
+        }
+    }
 
     template <typename T> static Q_ALWAYS_INLINE
     T fetchAndAddAcquire(T &_q_value, typename QAtomicAdditiveType<T>::AdditiveT valueToAdd) Q_DECL_NOTHROW
@@ -270,7 +286,15 @@ QT_WARNING_POP
     }
 
     template <typename T> static Q_ALWAYS_INLINE
-    T fetchAndAndRelaxed(T &_q_value, typename std::enable_if<QTypeInfo<T>::isIntegral, T>::type operand) Q_DECL_NOTHROW;
+    T fetchAndAndRelaxed(T &_q_value, typename std::enable_if<QTypeInfo<T>::isIntegral, T>::type operand) Q_DECL_NOTHROW
+    {
+        // implement fetchAndAnd on top of testAndSet
+        T tmp = BaseClass::load(_q_value);
+        Q_FOREVER {
+            if (BaseClass::testAndSetRelaxed(_q_value, tmp, T(tmp & operand), &tmp))
+                return tmp;
+        }
+    }
 
     template <typename T> static Q_ALWAYS_INLINE
     T fetchAndAndAcquire(T &_q_value, typename std::enable_if<QTypeInfo<T>::isIntegral, T>::type operand) Q_DECL_NOTHROW
@@ -295,7 +319,15 @@ QT_WARNING_POP
     }
 
     template <typename T> static Q_ALWAYS_INLINE
-    T fetchAndOrRelaxed(T &_q_value, typename std::enable_if<QTypeInfo<T>::isIntegral, T>::type operand) Q_DECL_NOTHROW;
+    T fetchAndOrRelaxed(T &_q_value, typename std::enable_if<QTypeInfo<T>::isIntegral, T>::type operand) Q_DECL_NOTHROW
+    {
+        // implement fetchAndOr on top of testAndSet
+        T tmp = BaseClass::load(_q_value);
+        Q_FOREVER {
+            if (BaseClass::testAndSetRelaxed(_q_value, tmp, T(tmp | operand), &tmp))
+                return tmp;
+        }
+    }
 
     template <typename T> static Q_ALWAYS_INLINE
     T fetchAndOrAcquire(T &_q_value, typename std::enable_if<QTypeInfo<T>::isIntegral, T>::type operand) Q_DECL_NOTHROW
@@ -320,7 +352,15 @@ QT_WARNING_POP
     }
 
     template <typename T> static Q_ALWAYS_INLINE
-    T fetchAndXorRelaxed(T &_q_value, typename std::enable_if<QTypeInfo<T>::isIntegral, T>::type operand) Q_DECL_NOTHROW;
+    T fetchAndXorRelaxed(T &_q_value, typename std::enable_if<QTypeInfo<T>::isIntegral, T>::type operand) Q_DECL_NOTHROW
+    {
+        // implement fetchAndXor on top of testAndSet
+        T tmp = BaseClass::load(_q_value);
+        Q_FOREVER {
+            if (BaseClass::testAndSetRelaxed(_q_value, tmp, T(tmp ^ operand), &tmp))
+                return tmp;
+        }
+    }
 
     template <typename T> static Q_ALWAYS_INLINE
     T fetchAndXorAcquire(T &_q_value, typename std::enable_if<QTypeInfo<T>::isIntegral, T>::type operand) Q_DECL_NOTHROW

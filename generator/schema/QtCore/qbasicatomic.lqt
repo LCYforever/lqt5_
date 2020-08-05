@@ -38,31 +38,31 @@
 **
 ****************************************************************************/
 
-#include <QtCore/qatomic.lqt>
+#include <QtCore/qglobal.lqt>
 
 #ifndef QBASICATOMIC_H
 #define QBASICATOMIC_H
 
-// #if defined(QT_BOOTSTRAPPED)
-// #  include <QtCore/qatomic_bootstrap.h>
+#if defined(QT_BOOTSTRAPPED)
+#  include <QtCore/qatomic_bootstrap.lqt>
 
-// // If C++11 atomics are supported, use them!
-// // Note that constexpr support is sometimes disabled in QNX builds but its
-// // library has <atomic>.
-// #elif defined(Q_COMPILER_ATOMICS) && (defined(Q_COMPILER_CONSTEXPR) || defined(Q_OS_QNX))
-// #  include <QtCore/qatomic_cxx11.h>
+// If C++11 atomics are supported, use them!
+// Note that constexpr support is sometimes disabled in QNX builds but its
+// library has <atomic>.
+#elif defined(Q_COMPILER_ATOMICS) && (defined(Q_COMPILER_CONSTEXPR) || defined(Q_OS_QNX))
+#  include <QtCore/qatomic_cxx11.lqt>
 
-// // We only support one fallback: MSVC, because even on version 2015, it lacks full constexpr support
-// #elif defined(Q_CC_MSVC)
-// #  include <QtCore/qatomic_msvc.h>
+// We only support one fallback: MSVC, because even on version 2015, it lacks full constexpr support
+#elif defined(Q_CC_MSVC)
+#  include <QtCore/qatomic_msvc.lqt>
 
-// // No fallback
-// #else
-// #  error "Qt requires C++11 support"
-// #endif
+// No fallback
+#else
+#  error "Qt requires C++11 support"
+#endif
 
-// QT_WARNING_PUSH
-// QT_WARNING_DISABLE_MSVC(4522)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_MSVC(4522)
 
 QT_BEGIN_NAMESPACE
 
@@ -75,16 +75,16 @@ QT_END_NAMESPACE
 
 // New atomics
 
-// #if defined(Q_COMPILER_CONSTEXPR) && defined(Q_COMPILER_DEFAULT_MEMBERS) && defined(Q_COMPILER_DELETE_MEMBERS)
-// # if defined(Q_CC_CLANG) && Q_CC_CLANG < 303
+#if defined(Q_COMPILER_CONSTEXPR) && defined(Q_COMPILER_DEFAULT_MEMBERS) && defined(Q_COMPILER_DELETE_MEMBERS)
+# if defined(Q_CC_CLANG) && Q_CC_CLANG < 303
    /*
       Do not define QT_BASIC_ATOMIC_HAS_CONSTRUCTORS for Clang before version 3.3.
       For details about the bug: see http://llvm.org/bugs/show_bug.cgi?id=12670
     */
-// # else
+# else
 #  define QT_BASIC_ATOMIC_HAS_CONSTRUCTORS
-// # endif
-// #endif
+# endif
+#endif
 
 template <typename T>
 class QBasicAtomicInteger
@@ -92,9 +92,9 @@ class QBasicAtomicInteger
 public:
     typedef T Type;
     typedef QAtomicOps<T> Ops;
-    // // static check that this is a valid integer
-    // Q_STATIC_ASSERT_X(QTypeInfo<T>::isIntegral, "template parameter is not an integral type");
-    // Q_STATIC_ASSERT_X(QAtomicOpsSupport<sizeof(T)>::IsSupported, "template parameter is an integral of a size not supported on this platform");
+    // static check that this is a valid integer
+    Q_STATIC_ASSERT_X(QTypeInfo<T>::isIntegral, "template parameter is not an integral type");
+    Q_STATIC_ASSERT_X(QAtomicOpsSupport<sizeof(T)>::IsSupported, "template parameter is an integral of a size not supported on this platform");
 
     typename Ops::Type _q_value;
 
@@ -217,8 +217,8 @@ public:
 
 
 #ifdef QT_BASIC_ATOMIC_HAS_CONSTRUCTORS
-    QBasicAtomicInteger();
-    constexpr QBasicAtomicInteger(T value) Q_DECL_NOTHROW;
+    QBasicAtomicInteger() = default;
+    constexpr QBasicAtomicInteger(T value) Q_DECL_NOTHROW : _q_value(value) {}
     QBasicAtomicInteger(const QBasicAtomicInteger &) = delete;
     QBasicAtomicInteger &operator=(const QBasicAtomicInteger &) = delete;
     QBasicAtomicInteger &operator=(const QBasicAtomicInteger &) volatile = delete;
@@ -313,8 +313,8 @@ public:
     { return fetchAndSubOrdered(valueToSub) - valueToSub; }
 
 #ifdef QT_BASIC_ATOMIC_HAS_CONSTRUCTORS
-    QBasicAtomicPointer();
-    constexpr QBasicAtomicPointer(Type value) Q_DECL_NOTHROW;
+    QBasicAtomicPointer() = default;
+    constexpr QBasicAtomicPointer(Type value) Q_DECL_NOTHROW : _q_value(value) {}
     QBasicAtomicPointer(const QBasicAtomicPointer &) = delete;
     QBasicAtomicPointer &operator=(const QBasicAtomicPointer &) = delete;
     QBasicAtomicPointer &operator=(const QBasicAtomicPointer &) volatile = delete;

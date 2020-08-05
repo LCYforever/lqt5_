@@ -42,23 +42,23 @@
 
 #include <QtCore/qstring.lqt>
 
-// #if defined(Q_OS_WIN) || defined(Q_CLANG_QDOC)
-// #ifndef GUID_DEFINED
-// #define GUID_DEFINED
-// typedef struct _GUID
-// {
-//     ulong   Data1;
-//     ushort  Data2;
-//     ushort  Data3;
-//     uchar   Data4[8];
-// } GUID, *REFGUID, *LPGUID;
-// #endif
-// #endif
+#if defined(Q_OS_WIN) || defined(Q_CLANG_QDOC)
+#ifndef GUID_DEFINED
+#define GUID_DEFINED
+typedef struct _GUID
+{
+    ulong   Data1;
+    ushort  Data2;
+    ushort  Data3;
+    uchar   Data4[8];
+} GUID, *REFGUID, *LPGUID;
+#endif
+#endif
 
-// #if defined(Q_OS_DARWIN) || defined(Q_CLANG_QDOC)
-// Q_FORWARD_DECLARE_CF_TYPE(CFUUID);
-// Q_FORWARD_DECLARE_OBJC_CLASS(NSUUID);
-// #endif
+#if defined(Q_OS_DARWIN) || defined(Q_CLANG_QDOC)
+Q_FORWARD_DECLARE_CF_TYPE(CFUUID);
+Q_FORWARD_DECLARE_OBJC_CLASS(NSUUID);
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -91,14 +91,14 @@ public:
         Id128           = 3
     };
 
-// #if defined(Q_COMPILER_UNIFORM_INIT) && !defined(Q_CLANG_QDOC)
+#if defined(Q_COMPILER_UNIFORM_INIT) && !defined(Q_CLANG_QDOC)
 
-//     Q_DECL_CONSTEXPR QUuid() Q_DECL_NOTHROW : data1(0), data2(0), data3(0), data4{0,0,0,0,0,0,0,0} {}
+    Q_DECL_CONSTEXPR QUuid() Q_DECL_NOTHROW : data1(0), data2(0), data3(0), data4{0,0,0,0,0,0,0,0} {}
 
-//     Q_DECL_CONSTEXPR QUuid(uint l, ushort w1, ushort w2, uchar b1, uchar b2, uchar b3,
-//                            uchar b4, uchar b5, uchar b6, uchar b7, uchar b8) Q_DECL_NOTHROW
-//         : data1(l), data2(w1), data3(w2), data4{b1, b2, b3, b4, b5, b6, b7, b8} {}
-// #else
+    Q_DECL_CONSTEXPR QUuid(uint l, ushort w1, ushort w2, uchar b1, uchar b2, uchar b3,
+                           uchar b4, uchar b5, uchar b6, uchar b7, uchar b8) Q_DECL_NOTHROW
+        : data1(l), data2(w1), data3(w2), data4{b1, b2, b3, b4, b5, b6, b7, b8} {}
+#else
     QUuid() Q_DECL_NOTHROW
     {
         data1 = 0;
@@ -121,7 +121,7 @@ public:
         data4[6] = b7;
         data4[7] = b8;
     }
-// #endif
+#endif
 
     QUuid(const QString &);
     static QUuid fromString(QStringView string) Q_DECL_NOTHROW;
@@ -157,15 +157,15 @@ public:
     bool operator<(const QUuid &other) const Q_DECL_NOTHROW;
     bool operator>(const QUuid &other) const Q_DECL_NOTHROW;
 
-// #if defined(Q_OS_WIN) || defined(Q_CLANG_QDOC)
-//     // On Windows we have a type GUID that is used by the platform API, so we
-//     // provide convenience operators to cast from and to this type.
-// #if defined(Q_COMPILER_UNIFORM_INIT) && !defined(Q_CLANG_QDOC)
-//     Q_DECL_CONSTEXPR QUuid(const GUID &guid) Q_DECL_NOTHROW
-//         : data1(guid.Data1), data2(guid.Data2), data3(guid.Data3),
-//           data4{guid.Data4[0], guid.Data4[1], guid.Data4[2], guid.Data4[3],
-//                 guid.Data4[4], guid.Data4[5], guid.Data4[6], guid.Data4[7]} {}
-// #else
+#if defined(Q_OS_WIN) || defined(Q_CLANG_QDOC)
+    // On Windows we have a type GUID that is used by the platform API, so we
+    // provide convenience operators to cast from and to this type.
+#if defined(Q_COMPILER_UNIFORM_INIT) && !defined(Q_CLANG_QDOC)
+    Q_DECL_CONSTEXPR QUuid(const GUID &guid) Q_DECL_NOTHROW
+        : data1(guid.Data1), data2(guid.Data2), data3(guid.Data3),
+          data4{guid.Data4[0], guid.Data4[1], guid.Data4[2], guid.Data4[3],
+                guid.Data4[4], guid.Data4[5], guid.Data4[6], guid.Data4[7]} {}
+#else
     QUuid(const GUID &guid) Q_DECL_NOTHROW
     {
         data1 = guid.Data1;
@@ -174,7 +174,7 @@ public:
         for(int i = 0; i < 8; i++)
             data4[i] = guid.Data4[i];
     }
-// #endif
+#endif
 
     Q_DECL_RELAXED_CONSTEXPR QUuid &operator=(const GUID &guid) Q_DECL_NOTHROW
     {
@@ -197,18 +197,18 @@ public:
     {
         return !(*this == guid);
     }
-// #endif
+#endif
     static QUuid createUuid();
-// #ifndef QT_BOOTSTRAPPED
+#ifndef QT_BOOTSTRAPPED
     static QUuid createUuidV3(const QUuid &ns, const QByteArray &baseData);
-// #endif
+#endif
     static QUuid createUuidV5(const QUuid &ns, const QByteArray &baseData);
-// #ifndef QT_BOOTSTRAPPED
+#ifndef QT_BOOTSTRAPPED
     static inline QUuid createUuidV3(const QUuid &ns, const QString &baseData)
     {
         return QUuid::createUuidV3(ns, baseData.toUtf8());
     }
-// #endif
+#endif
 
     static inline QUuid createUuidV5(const QUuid &ns, const QString &baseData)
     {
@@ -219,17 +219,17 @@ public:
     QUuid::Variant variant() const Q_DECL_NOTHROW;
     QUuid::Version version() const Q_DECL_NOTHROW;
 
-// #if defined(Q_OS_DARWIN) || defined(Q_CLANG_QDOC)
-//     static QUuid fromCFUUID(CFUUIDRef uuid);
-//     CFUUIDRef toCFUUID() const Q_DECL_CF_RETURNS_RETAINED;
-//     static QUuid fromNSUUID(const NSUUID *uuid);
-//     NSUUID *toNSUUID() const Q_DECL_NS_RETURNS_AUTORELEASED;
-// #endif
+#if defined(Q_OS_DARWIN) || defined(Q_CLANG_QDOC)
+    static QUuid fromCFUUID(CFUUIDRef uuid);
+    CFUUIDRef toCFUUID() const Q_DECL_CF_RETURNS_RETAINED;
+    static QUuid fromNSUUID(const NSUUID *uuid);
+    NSUUID *toNSUUID() const Q_DECL_NS_RETURNS_AUTORELEASED;
+#endif
 
-    // uint    data1;
-    // ushort  data2;
-    // ushort  data3;
-    // uchar   data4[8];
+    uint    data1;
+    ushort  data2;
+    ushort  data3;
+    uchar   data4[8];
 };
 
 Q_DECLARE_TYPEINFO(QUuid, Q_PRIMITIVE_TYPE);

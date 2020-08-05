@@ -74,19 +74,16 @@ struct Q_CORE_EXPORT QJsonParseError
 
     int        offset;
     ParseError error;
-
-    // TODO:lqt add default struct ctor
-    QJsonParseError();
 };
 
 class Q_CORE_EXPORT QJsonDocument
 {
 public:
-// #ifdef Q_LITTLE_ENDIAN
+#ifdef Q_LITTLE_ENDIAN
     static const uint BinaryFormatTag = ('q') | ('b' << 8) | ('j' << 16) | ('s' << 24);
-// #else
-//     static const uint BinaryFormatTag = ('q' << 24) | ('b' << 16) | ('j' << 8) | ('s');
-// #endif
+#else
+    static const uint BinaryFormatTag = ('q' << 24) | ('b' << 16) | ('j' << 8) | ('s');
+#endif
 
     QJsonDocument();
     explicit QJsonDocument(const QJsonObject &object);
@@ -134,10 +131,10 @@ public:
 
     static QJsonDocument fromJson(const QByteArray &json, QJsonParseError *error = nullptr);
 
-// #if !defined(QT_JSON_READONLY) || defined(Q_CLANG_QDOC)
+#if !defined(QT_JSON_READONLY) || defined(Q_CLANG_QDOC)
     QByteArray toJson() const; //### Merge in Qt6
     QByteArray toJson(JsonFormat format) const;
-// #endif
+#endif
 
     bool isEmpty() const;
     bool isArray() const;
@@ -173,6 +170,11 @@ Q_DECLARE_SHARED_NOT_MOVABLE_UNTIL_QT6(QJsonDocument)
 
 #if !defined(QT_NO_DEBUG_STREAM) && !defined(QT_JSON_READONLY)
 Q_CORE_EXPORT QDebug operator<<(QDebug, const QJsonDocument &);
+#endif
+
+#ifndef QT_NO_DATASTREAM
+Q_CORE_EXPORT QDataStream &operator<<(QDataStream &, const QJsonDocument &);
+Q_CORE_EXPORT QDataStream &operator>>(QDataStream &, QJsonDocument &);
 #endif
 
 QT_END_NAMESPACE

@@ -56,13 +56,13 @@ class QStateMachinePrivate;
 class QAbstractAnimation;
 class Q_CORE_EXPORT QStateMachine : public QState
 {
-    LQT_OBJECT Q_OBJECT
+    LQT_OBJECT O_OBJECT
     Q_PROPERTY(QString errorString READ errorString)
     Q_PROPERTY(QState::RestorePolicy globalRestorePolicy READ globalRestorePolicy WRITE setGlobalRestorePolicy)
     Q_PROPERTY(bool running READ isRunning WRITE setRunning NOTIFY runningChanged)
-// #if QT_CONFIG(animation)
+#if QT_CONFIG(animation)
     Q_PROPERTY(bool animated READ isAnimated WRITE setAnimated)
-// #endif
+#endif
 public:
     class Q_CORE_EXPORT SignalEvent : public QEvent
     {
@@ -122,14 +122,14 @@ public:
 
     bool isRunning() const;
 
-// #if QT_CONFIG(animation)
+#if QT_CONFIG(animation)
     bool isAnimated() const;
     void setAnimated(bool enabled);
 
     void addDefaultAnimation(QAbstractAnimation *animation);
     QList<QAbstractAnimation *> defaultAnimations() const;
     void removeDefaultAnimation(QAbstractAnimation *animation);
-// #endif // animation
+#endif // animation
 
     QState::RestorePolicy globalRestorePolicy() const;
     void setGlobalRestorePolicy(QState::RestorePolicy restorePolicy);
@@ -140,9 +140,9 @@ public:
 
     QSet<QAbstractState*> configuration() const;
 
-// #if QT_CONFIG(qeventtransition)
+#if QT_CONFIG(qeventtransition)
     bool eventFilter(QObject *watched, QEvent *event) override;
-// #endif
+#endif
 
 public Q_SLOTS:
     void start();
@@ -175,9 +175,9 @@ private:
     Q_DECLARE_PRIVATE(QStateMachine)
     Q_PRIVATE_SLOT(d_func(), void _q_start())
     Q_PRIVATE_SLOT(d_func(), void _q_process())
-// #if QT_CONFIG(animation)
+#if QT_CONFIG(animation)
     Q_PRIVATE_SLOT(d_func(), void _q_animationFinished())
-// #endif
+#endif
     Q_PRIVATE_SLOT(d_func(), void _q_startDelayedEventTimer(int, int))
     Q_PRIVATE_SLOT(d_func(), void _q_killDelayedEventTimer(int, int))
 };

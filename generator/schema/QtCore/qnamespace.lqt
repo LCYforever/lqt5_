@@ -1,7 +1,6 @@
 /****************************************************************************
 **
 ** Copyright (C) 2016 The Qt Company Ltd.
-** Copyright (C) 2013 Olivier Goffart <ogoffart@woboq.com>
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -43,22 +42,36 @@
 
 #include <QtCore/qglobal.lqt>
 
+#if defined(__OBJC__) && !defined(__cplusplus)
+#  warning "File built in Objective-C mode (.m), but using Qt requires Objective-C++ (.mm)"
+#endif
+
 QT_BEGIN_NAMESPACE
 
 #if !defined(Q_QDOC) && !defined(Q_MOC_RUN)
 struct QMetaObject;
-const QMetaObject *qt_getQtMetaObject(); // defined in qobject.h (which can't be included here)
-#define QT_Q_ENUM(ENUM)
-    // inline const QMetaObject *qt_getEnumMetaObject(ENUM); \
-    // inline const char *qt_getEnumName(ENUM);
+const QMetaObject *qt_getQtMetaObject() Q_DECL_NOEXCEPT; // defined in qobject.h (which can't be included here)
+#define QT_Q_ENUM(ENUM) \
+    inline const QMetaObject *qt_getEnumMetaObject(ENUM) Q_DECL_NOEXCEPT { return qt_getQtMetaObject(); } \
+    inline Q_DECL_CONSTEXPR const char *qt_getEnumName(ENUM) Q_DECL_NOEXCEPT { return #ENUM; }
 #define QT_Q_FLAG(ENUM) QT_Q_ENUM(ENUM)
 #else
 #define QT_Q_ENUM Q_ENUM
 #define QT_Q_FLAG Q_FLAG
 #endif
 
-namespace Qt
-{
+#ifndef Q_MOC_RUN
+namespace
+#else
+class Q_CORE_EXPORT
+#endif
+Qt {
+
+#if defined(Q_MOC_RUN)
+    LQT_OBJECT O_OBJECT
+public:
+#endif
+
     enum GlobalColor {
         color0,
         color1,
@@ -233,7 +246,10 @@ namespace Qt
         // Ensures that the longest variant is always used when computing the
         // size of a multi-variant string.
         TextLongestVariant = 0x80000
+
+#if QT_DEPRECATED_SINCE(5, 11) && QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
         , TextBypassShaping = 0x100000
+#endif
     };
 
     enum TextElideMode {
@@ -484,7 +500,9 @@ namespace Qt
         AA_NativeWindows = 3,
         AA_DontCreateNativeWidgetSiblings = 4,
         AA_PluginApplication = 5,
-        AA_MacPluginApplication = AA_PluginApplication,  // ### Qt 6: remove me
+#if QT_DEPRECATED_SINCE(5, 13) // ### Qt 6: remove me
+        AA_MacPluginApplication Q_DECL_ENUMERATOR_DEPRECATED = AA_PluginApplication,
+#endif
         AA_DontUseNativeMenuBar = 6,
         AA_MacDontSwapCtrlAndMeta = 7,
         AA_Use96Dpi = 8,
@@ -500,7 +518,7 @@ namespace Qt
         AA_SetPalette = 19,
         AA_EnableHighDpiScaling = 20,
         AA_DisableHighDpiScaling = 21,
-        AA_UseStyleSheetPropagationInWidgetStyles = 22, // ### Qt 6: remove me
+        AA_UseStyleSheetPropagationInWidgetStyles = 22,
         AA_DontUseNativeDialogs = 23,
         AA_SynthesizeMouseForUnhandledTabletEvents = 24,
         AA_CompressHighFrequencyEvents = 25,
@@ -1092,7 +1110,9 @@ namespace Qt
         DashDotLine,
         DashDotDotLine,
         CustomDashLine
+#ifndef Q_MOC_RUN
         , MPenStyle = 0x0f
+#endif
     };
 
     enum PenCapStyle { // line endcap style
@@ -1486,10 +1506,12 @@ namespace Qt
         // Metadata
         FontRole = 6,
         TextAlignmentRole = 7,
-        BackgroundColorRole = 8,
         BackgroundRole = 8,
-        TextColorRole = 9,
         ForegroundRole = 9,
+#if QT_DEPRECATED_SINCE(5, 13) // ### Qt 6: remove me
+        BackgroundColorRole Q_DECL_ENUMERATOR_DEPRECATED = BackgroundRole,
+        TextColorRole Q_DECL_ENUMERATOR_DEPRECATED = ForegroundRole,
+#endif
         CheckStateRole = 10,
         // Accessibility
         AccessibleTextRole = 11,
@@ -1516,7 +1538,9 @@ namespace Qt
         ItemIsUserCheckable = 16,
         ItemIsEnabled = 32,
         ItemIsAutoTristate = 64,
+#if QT_DEPRECATED_SINCE(5, 6)
         ItemIsTristate = ItemIsAutoTristate,
+#endif
         ItemNeverHasChildren = 128,
         ItemIsUserTristate = 256
     };
@@ -1539,7 +1563,9 @@ namespace Qt
     Q_DECLARE_OPERATORS_FOR_FLAGS(MatchFlags)
 
     typedef void * HANDLE;
+#if QT_DEPRECATED_SINCE(5, 0)
     typedef WindowFlags WFlags;
+#endif
 
     enum WindowModality {
         NonModal,
@@ -1588,9 +1614,16 @@ namespace Qt
         TitleBarArea    // For move
     };
 
+#if defined(Q_COMPILER_CLASS_ENUM) && defined(Q_COMPILER_CONSTEXPR)
+    enum class Initialization {
+        Uninitialized
+    };
+    static constexpr Q_DECL_UNUSED Initialization Uninitialized = Initialization::Uninitialized;
+#else
     enum Initialization {
         Uninitialized
     };
+#endif
 
     enum CoordinateSystem {
         DeviceCoordinates,
@@ -1606,6 +1639,7 @@ namespace Qt
     Q_DECLARE_FLAGS(TouchPointStates, TouchPointState)
     Q_DECLARE_OPERATORS_FOR_FLAGS(TouchPointStates)
 
+#ifndef QT_NO_GESTURES
     enum GestureState
     {
         NoGesture,
@@ -1647,6 +1681,8 @@ namespace Qt
         RotateNativeGesture,
         SwipeNativeGesture
     };
+
+#endif // QT_NO_GESTURES
 
     enum NavigationMode
     {
@@ -1695,6 +1731,8 @@ namespace Qt
         ChecksumItuV41
     };
 
+#ifndef Q_QDOC
+    // NOTE: Generally, do not add QT_Q_ENUM if a corresponding Q_Q_FLAG exists.
     QT_Q_ENUM(ScrollBarPolicy)
     QT_Q_ENUM(FocusPolicy)
     QT_Q_ENUM(ContextMenuPolicy)
@@ -1767,11 +1805,11 @@ namespace Qt
     QT_Q_FLAG(ScreenOrientations)
     QT_Q_ENUM(ConnectionType)
     QT_Q_ENUM(ApplicationState)
-
+#ifndef QT_NO_GESTURES
     QT_Q_ENUM(GestureState)
     QT_Q_ENUM(GestureType)
     QT_Q_ENUM(NativeGestureType)
-
+#endif
     QT_Q_ENUM(CursorMoveStyle)
     QT_Q_ENUM(TimerType)
     QT_Q_ENUM(ScrollPhase)
@@ -1779,11 +1817,19 @@ namespace Qt
     QT_Q_FLAG(MouseEventFlag)
     QT_Q_ENUM(ChecksumType)
     QT_Q_ENUM(TabFocusBehavior)
-};
+#endif // Q_DOC
 
-// typedef bool (*qInternalCallback)(void **);
+}
+#ifdef Q_MOC_RUN
+ ;
+#endif
 
-class QInternal {
+#undef QT_Q_ENUM
+#undef QT_Q_FLAG
+
+typedef bool (*qInternalCallback)(void **);
+
+class Q_CORE_EXPORT QInternal {
 public:
     enum PaintDeviceFlags {
         UnknownDevice = 0x00,
@@ -1817,9 +1863,9 @@ public:
         EventNotifyCallback,
         LastCallback
     };
-    // static bool registerCallback(Callback, qInternalCallback);
-    // static bool unregisterCallback(Callback, qInternalCallback);
-    // static bool activateCallbacks(Callback, void **);
+    static bool registerCallback(Callback, qInternalCallback);
+    static bool unregisterCallback(Callback, qInternalCallback);
+    static bool activateCallbacks(Callback, void **);
 };
 
 QT_END_NAMESPACE

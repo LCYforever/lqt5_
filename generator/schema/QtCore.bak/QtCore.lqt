@@ -1,0 +1,257 @@
+#ifndef QT_QTCORE_MODULE_H
+#define QT_QTCORE_MODULE_H
+#include <QtCore/QtCoreDepends.lqt>
+#include "qglobal.lqt"
+// #if QT_CONFIG(animation)
+#include "qabstractanimation.lqt"
+// #endif
+#include "qabstracteventdispatcher.lqt"
+// #if QT_CONFIG(itemmodel)
+#include "qabstractitemmodel.lqt"
+// #endif
+#include "qabstractnativeeventfilter.lqt"
+// #if QT_CONFIG(proxymodel)
+#include "qabstractproxymodel.lqt"
+// #endif
+// #if QT_CONFIG(statemachine)
+#include "qabstractstate.lqt"
+// #endif
+// #if QT_CONFIG(statemachine)
+#include "qabstracttransition.lqt"
+// #endif
+#include "qalgorithms.lqt"
+// #if QT_CONFIG(animation)
+#include "qanimationgroup.lqt"
+// #endif
+#include "qarraydata.lqt"
+#include "qarraydataops.lqt"
+#include "qarraydatapointer.lqt"
+#include "qatomic.lqt"
+#include "qbasictimer.lqt"
+#include "qbitarray.lqt"
+#include "qbuffer.lqt"
+#include "qbytearray.lqt"
+#include "qbytearraylist.lqt"
+#include "qbytearraymatcher.lqt"
+#include "qcache.lqt"
+#include "qcborarray.lqt"
+#include "qcborcommon.lqt"
+#include "qcbormap.lqt"
+#include "qcborstream.lqt"
+#include "qcborvalue.lqt"
+#include "qchar.lqt"
+#include "qcollator.lqt"
+// #if QT_CONFIG(commandlineparser)
+#include "qcommandlineoption.lqt"
+// #endif
+// #if QT_CONFIG(commandlineparser)
+#include "qcommandlineparser.lqt"
+// #endif
+#include "qcompilerdetection.lqt"
+#include "qcontainerfwd.lqt"
+#include "qcontiguouscache.lqt"
+#include "qcoreapplication.lqt"
+#include "qcoreevent.lqt"
+#include "qcryptographichash.lqt"
+#include "qdatastream.lqt"
+#include "qdatetime.lqt"
+#include "qdeadlinetimer.lqt"
+#include "qdebug.lqt"
+#include "qdir.lqt"
+#include "qdiriterator.lqt"
+#include "qeasingcurve.lqt"
+#include "qelapsedtimer.lqt"
+#include "qendian.lqt"
+#include "qeventloop.lqt"
+// #if QT_CONFIG(qeventtransition)
+#include "qeventtransition.lqt"
+// #endif
+// #if QT_CONFIG(future)
+#include "qexception.lqt"
+// #endif
+#include "qfactoryinterface.lqt"
+#include "qfile.lqt"
+#include "qfiledevice.lqt"
+#include "qfileinfo.lqt"
+#include "qfileselector.lqt"
+// #if QT_CONFIG(filesystemwatcher)
+#include "qfilesystemwatcher.lqt"
+// #endif
+// #if QT_CONFIG(statemachine)
+#include "qfinalstate.lqt"
+// #endif
+#include "qflags.lqt"
+// #if QT_CONFIG(future)
+#include "qfuture.lqt"
+// #endif
+// #if QT_CONFIG(future)
+#include "qfutureinterface.lqt"
+// #endif
+// #if QT_CONFIG(future)
+#include "qfuturesynchronizer.lqt"
+// #endif
+// #if QT_CONFIG(future)
+#include "qfuturewatcher.lqt"
+// #endif
+#include "qgenericatomic.lqt"
+#include "qglobalstatic.lqt"
+#include "qhash.lqt"
+#include "qhashfunctions.lqt"
+// #if QT_CONFIG(statemachine)
+#include "qhistorystate.lqt"
+// #endif
+// #if QT_CONFIG(identityproxymodel)
+#include "qidentityproxymodel.lqt"
+// #endif
+#include "qiodevice.lqt"
+#include "qisenum.lqt"
+// #if QT_CONFIG(itemmodel)
+#include "qitemselectionmodel.lqt"
+// #endif
+#include "qiterator.lqt"
+#include "qjsonarray.lqt"
+#include "qjsondocument.lqt"
+#include "qjsonobject.lqt"
+#include "qjsonvalue.lqt"
+// #if QT_CONFIG(library)
+#include "qlibrary.lqt"
+// #endif
+#include "qlibraryinfo.lqt"
+#include "qline.lqt"
+#include "qlinkedlist.lqt"
+#include "qlist.lqt"
+#include "qlocale.lqt"
+#include "qlockfile.lqt"
+#include "qloggingcategory.lqt"
+#include "qmap.lqt"
+#include "qmargins.lqt"
+#include "qmath.lqt"
+#include "qmessageauthenticationcode.lqt"
+#include "qmetaobject.lqt"
+#include "qmetatype.lqt"
+#include "qmimedata.lqt"
+// #if QT_CONFIG(mimetype)
+#include "qmimedatabase.lqt"
+// #endif
+// #if QT_CONFIG(mimetype)
+#include "qmimetype.lqt"
+// #endif
+#include "qmutex.lqt"
+#include "qnamespace.lqt"
+#include "qnumeric.lqt"
+#include "qobject.lqt"
+#include "qobjectcleanuphandler.lqt"
+#include "qobjectdefs.lqt"
+#include "qoperatingsystemversion.lqt"
+#include "qpair.lqt"
+// #if QT_CONFIG(animation)
+#include "qparallelanimationgroup.lqt"
+// #endif
+// #if QT_CONFIG(animation)
+#include "qpauseanimation.lqt"
+// #endif
+#include "qplugin.lqt"
+#include "qpluginloader.lqt"
+#include "qpoint.lqt"
+#include "qpointer.lqt"
+// #if QT_CONFIG(processenvironment)
+#include "qprocess.lqt"
+// #endif
+#include "qprocessordetection.lqt"
+// #if QT_CONFIG(animation)
+#include "qpropertyanimation.lqt"
+// #endif
+#include "qqueue.lqt"
+#include "qrandom.lqt"
+#include "qreadwritelock.lqt"
+#include "qrect.lqt"
+#include "qrefcount.lqt"
+#include "qregexp.lqt"
+// #if QT_CONFIG(regularexpression)
+#include "qregularexpression.lqt"
+// #endif
+#include "qresource.lqt"
+// #if QT_CONFIG(future)
+#include "qresultstore.lqt"
+// #endif
+#include "qrunnable.lqt"
+#include "qsavefile.lqt"
+#include "qscopedpointer.lqt"
+#include "qscopedvaluerollback.lqt"
+#include "qscopeguard.lqt"
+// #if QT_CONFIG(thread)
+#include "qsemaphore.lqt"
+// #endif
+// #if QT_CONFIG(animation)
+#include "qsequentialanimationgroup.lqt"
+// #endif
+#include "qset.lqt"
+#include "qsettings.lqt"
+#include "qshareddata.lqt"
+#include "qsharedmemory.lqt"
+#include "qsharedpointer.lqt"
+#include "qsignalmapper.lqt"
+// #if QT_CONFIG(statemachine)
+#include "qsignaltransition.lqt"
+// #endif
+#include "qsize.lqt"
+#include "qsocketnotifier.lqt"
+// #if QT_CONFIG(sortfilterproxymodel)
+#include "qsortfilterproxymodel.lqt"
+// #endif
+#include "qstack.lqt"
+#include "qstandardpaths.lqt"
+// #if QT_CONFIG(statemachine)
+#include "qstate.lqt"
+// #endif
+// #if QT_CONFIG(statemachine)
+#include "qstatemachine.lqt"
+// #endif
+#include "qstorageinfo.lqt"
+#include "qstring.lqt"
+#include "qstringalgorithms.lqt"
+#include "qstringbuilder.lqt"
+#include "qstringlist.lqt"
+// #if QT_CONFIG(stringlistmodel)
+#include "qstringlistmodel.lqt"
+// #endif
+#include "qstringliteral.lqt"
+#include "qstringmatcher.lqt"
+#include "qstringview.lqt"
+#include "qsysinfo.lqt"
+#include "qsystemdetection.lqt"
+#include "qsystemsemaphore.lqt"
+#include "qtemporarydir.lqt"
+#include "qtemporaryfile.lqt"
+#include "qtextboundaryfinder.lqt"
+#include "qtextcodec.lqt"
+#include "qtextstream.lqt"
+#include "qthread.lqt"
+// #if QT_CONFIG(thread)
+#include "qthreadpool.lqt"
+// #endif
+#include "qthreadstorage.lqt"
+#include "qtimeline.lqt"
+#include "qtimer.lqt"
+// #if QT_CONFIG(timezone)
+#include "qtimezone.lqt"
+// #endif
+#include "qtranslator.lqt"
+#include "qtypeinfo.lqt"
+#include "qtypetraits.lqt"
+#include "qurl.lqt"
+#include "qurlquery.lqt"
+#include "quuid.lqt"
+#include "qvariant.lqt"
+// #if QT_CONFIG(animation)
+#include "qvariantanimation.lqt"
+// #endif
+#include "qvarlengtharray.lqt"
+#include "qvector.lqt"
+#include "qversionnumber.lqt"
+#include "qversiontagging.lqt"
+#include "qwaitcondition.lqt"
+#include "qwineventnotifier.lqt"
+#include "qxmlstream.lqt"
+#include "qtcoreversion.lqt"
+#endif

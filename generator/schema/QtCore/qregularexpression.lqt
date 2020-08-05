@@ -87,10 +87,10 @@ public:
     ~QRegularExpression();
     QRegularExpression &operator=(const QRegularExpression &re);
 
-// #ifdef Q_COMPILER_RVALUE_REFS
-//     QRegularExpression &operator=(QRegularExpression &&re) Q_DECL_NOTHROW
-//     { d.swap(re.d); return *this; }
-// #endif
+#ifdef Q_COMPILER_RVALUE_REFS
+    QRegularExpression &operator=(QRegularExpression &&re) Q_DECL_NOTHROW
+    { d.swap(re.d); return *this; }
+#endif
 
     void swap(QRegularExpression &other) Q_DECL_NOTHROW { d.swap(other.d); }
 

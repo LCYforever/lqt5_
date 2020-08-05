@@ -51,7 +51,7 @@ class QSharedMemoryPrivate;
 
 class Q_CORE_EXPORT QSharedMemory : public QObject
 {
-    LQT_OBJECT Q_OBJECT
+    LQT_OBJECT O_OBJECT
     Q_DECLARE_PRIVATE(QSharedMemory)
 
 public:
@@ -94,10 +94,10 @@ public:
     const void* constData() const;
     const void *data() const;
 
-// #ifndef QT_NO_SYSTEMSEMAPHORE
+#ifndef QT_NO_SYSTEMSEMAPHORE
     bool lock();
     bool unlock();
-// #endif
+#endif
 
     SharedMemoryError error() const;
     QString errorString() const;

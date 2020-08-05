@@ -119,37 +119,37 @@ class QVersionNumber
             return *this;
         }
 
-// #ifdef Q_COMPILER_RVALUE_REFS
-//         SegmentStorage(SegmentStorage &&other) Q_DECL_NOTHROW
-//             : dummy(other.dummy)
-//         {
-//             other.dummy = 1;
-//         }
+#ifdef Q_COMPILER_RVALUE_REFS
+        SegmentStorage(SegmentStorage &&other) Q_DECL_NOTHROW
+            : dummy(other.dummy)
+        {
+            other.dummy = 1;
+        }
 
-//         SegmentStorage &operator=(SegmentStorage &&other) Q_DECL_NOTHROW
-//         {
-//             qSwap(dummy, other.dummy);
-//             return *this;
-//         }
+        SegmentStorage &operator=(SegmentStorage &&other) Q_DECL_NOTHROW
+        {
+            qSwap(dummy, other.dummy);
+            return *this;
+        }
 
-//         explicit SegmentStorage(QVector<int> &&seg)
-//         {
-//             if (dataFitsInline(seg.begin(), seg.size()))
-//                 setInlineData(seg.begin(), seg.size());
-//             else
-//                 pointer_segments = new QVector<int>(std::move(seg));
-//         }
-// #endif
-// #ifdef Q_COMPILER_INITIALIZER_LISTS
-//         SegmentStorage(std::initializer_list<int> args)
-//         {
-//             if (dataFitsInline(args.begin(), int(args.size()))) {
-//                 setInlineData(args.begin(), int(args.size()));
-//             } else {
-//                 pointer_segments = new QVector<int>(args);
-//             }
-//         }
-// #endif
+        explicit SegmentStorage(QVector<int> &&seg)
+        {
+            if (dataFitsInline(seg.begin(), seg.size()))
+                setInlineData(seg.begin(), seg.size());
+            else
+                pointer_segments = new QVector<int>(std::move(seg));
+        }
+#endif
+#ifdef Q_COMPILER_INITIALIZER_LISTS
+        SegmentStorage(std::initializer_list<int> args)
+        {
+            if (dataFitsInline(args.begin(), int(args.size()))) {
+                setInlineData(args.begin(), int(args.size()));
+            } else {
+                pointer_segments = new QVector<int>(args);
+            }
+        }
+#endif
 
         ~SegmentStorage() { if (isUsingPointer()) delete pointer_segments; }
 
@@ -187,34 +187,34 @@ class QVersionNumber
             }
         }
 
-//     private:
-//         static bool dataFitsInline(const int *data, int len)
-//         {
-//             if (len > InlineSegmentCount)
-//                 return false;
-//             for (int i = 0; i < len; ++i)
-//                 if (data[i] != qint8(data[i]))
-//                     return false;
-//             return true;
-//         }
-//         void setInlineData(const int *data, int len)
-//         {
-//             dummy = 1 + len * 2;
-// #if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
-//             for (int i = 0; i < len; ++i)
-//                 dummy |= quintptr(data[i] & 0xFF) << (8 * (i + 1));
-// #elif Q_BYTE_ORDER == Q_BIG_ENDIAN
-//             for (int i = 0; i < len; ++i)
-//                 dummy |= quintptr(data[i] & 0xFF) << (8 * (sizeof(void *) - i - 1));
-// #else
-//             // the code above is equivalent to:
-//             setInlineSize(len);
-//             for (int i = 0; i < len; ++i)
-//                 inline_segments[InlineSegmentStartIdx + i] = data[i] & 0xFF;
-// #endif
-//         }
+    private:
+        static bool dataFitsInline(const int *data, int len)
+        {
+            if (len > InlineSegmentCount)
+                return false;
+            for (int i = 0; i < len; ++i)
+                if (data[i] != qint8(data[i]))
+                    return false;
+            return true;
+        }
+        void setInlineData(const int *data, int len)
+        {
+            dummy = 1 + len * 2;
+#if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
+            for (int i = 0; i < len; ++i)
+                dummy |= quintptr(data[i] & 0xFF) << (8 * (i + 1));
+#elif Q_BYTE_ORDER == Q_BIG_ENDIAN
+            for (int i = 0; i < len; ++i)
+                dummy |= quintptr(data[i] & 0xFF) << (8 * (sizeof(void *) - i - 1));
+#else
+            // the code above is equivalent to:
+            setInlineSize(len);
+            for (int i = 0; i < len; ++i)
+                inline_segments[InlineSegmentStartIdx + i] = data[i] & 0xFF;
+#endif
+        }
 
-//         Q_CORE_EXPORT void setVector(int len, int maj, int min, int mic);
+        Q_CORE_EXPORT void setVector(int len, int maj, int min, int mic);
     } m_segments;
 
 public:
@@ -227,17 +227,17 @@ public:
 
     // compiler-generated copy/move ctor/assignment operators and the destructor are ok
 
-// #ifdef Q_COMPILER_RVALUE_REFS
-//     explicit QVersionNumber(QVector<int> &&seg)
-//         : m_segments(std::move(seg))
-//     {}
-// #endif
+#ifdef Q_COMPILER_RVALUE_REFS
+    explicit QVersionNumber(QVector<int> &&seg)
+        : m_segments(std::move(seg))
+    {}
+#endif
 
-// #ifdef Q_COMPILER_INITIALIZER_LISTS
-//     inline QVersionNumber(std::initializer_list<int> args)
-//         : m_segments(args)
-//     {}
-// #endif
+#ifdef Q_COMPILER_INITIALIZER_LISTS
+    inline QVersionNumber(std::initializer_list<int> args)
+        : m_segments(args)
+    {}
+#endif
 
     inline explicit QVersionNumber(int maj)
     { m_segments.setSegments(1, maj); }
@@ -280,9 +280,9 @@ public:
     Q_REQUIRED_RESULT Q_CORE_EXPORT static Q_DECL_PURE_FUNCTION QVersionNumber commonPrefix(const QVersionNumber &v1, const QVersionNumber &v2);
 
     Q_REQUIRED_RESULT Q_CORE_EXPORT QString toString() const;
-// #if QT_STRINGVIEW_LEVEL < 2
+#if QT_STRINGVIEW_LEVEL < 2
     Q_REQUIRED_RESULT Q_CORE_EXPORT static Q_DECL_PURE_FUNCTION QVersionNumber fromString(const QString &string, int *suffixIndex = nullptr);
-// #endif
+#endif
     Q_REQUIRED_RESULT Q_CORE_EXPORT static Q_DECL_PURE_FUNCTION QVersionNumber fromString(QLatin1String string, int *suffixIndex = nullptr);
     Q_REQUIRED_RESULT Q_CORE_EXPORT static Q_DECL_PURE_FUNCTION QVersionNumber fromString(QStringView string, int *suffixIndex = nullptr);
 

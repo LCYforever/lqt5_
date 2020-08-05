@@ -43,10 +43,10 @@
 #include <QtCore/qglobal.lqt>
 #include <QtCore/qobjectdefs.lqt>
 #include <QtCore/qvector.lqt>
-// #if QT_DEPRECATED_SINCE(5, 0)
+#if QT_DEPRECATED_SINCE(5, 0)
 # include <QtCore/qlist.lqt>
 # include <QtCore/qpoint.lqt>
-// #endif
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -80,11 +80,11 @@ public:
 
     QEasingCurve &operator=(const QEasingCurve &other)
     { if ( this != &other ) { QEasingCurve copy(other); swap(copy); } return *this; }
-// #ifdef Q_COMPILER_RVALUE_REFS
-//     QEasingCurve(QEasingCurve &&other) Q_DECL_NOTHROW : d_ptr(other.d_ptr) { other.d_ptr = nullptr; }
-//     QEasingCurve &operator=(QEasingCurve &&other) Q_DECL_NOTHROW
-//     { qSwap(d_ptr, other.d_ptr); return *this; }
-// #endif
+#ifdef Q_COMPILER_RVALUE_REFS
+    QEasingCurve(QEasingCurve &&other) Q_DECL_NOTHROW : d_ptr(other.d_ptr) { other.d_ptr = nullptr; }
+    QEasingCurve &operator=(QEasingCurve &&other) Q_DECL_NOTHROW
+    { qSwap(d_ptr, other.d_ptr); return *this; }
+#endif
 
     void swap(QEasingCurve &other) Q_DECL_NOTHROW { qSwap(d_ptr, other.d_ptr); }
 
@@ -104,19 +104,19 @@ public:
     void addCubicBezierSegment(const QPointF & c1, const QPointF & c2, const QPointF & endPoint);
     void addTCBSegment(const QPointF &nextPoint, qreal t, qreal c, qreal b);
     QVector<QPointF> toCubicSpline() const;
-// #if QT_DEPRECATED_SINCE(5, 0)
-//     QT_DEPRECATED QList<QPointF> cubicBezierSpline() const { return toCubicSpline().toList(); }
-// #endif
+#if QT_DEPRECATED_SINCE(5, 0)
+    QT_DEPRECATED QList<QPointF> cubicBezierSpline() const { return toCubicSpline().toList(); }
+#endif
 
     Type type() const;
     void setType(Type type);
-    // typedef qreal (*EasingFunction)(qreal progress);
-    // void setCustomType(EasingFunction func);
-    // EasingFunction customType() const;
+    typedef qreal (*EasingFunction)(qreal progress);
+    void setCustomType(EasingFunction func);
+    EasingFunction customType() const;
 
     qreal valueForProgress(qreal progress) const;
 private:
-//     QEasingCurvePrivate *d_ptr;
+    QEasingCurvePrivate *d_ptr;
 #ifndef QT_NO_DEBUG_STREAM
     friend Q_CORE_EXPORT QDebug operator<<(QDebug debug, const QEasingCurve &item);
 #endif

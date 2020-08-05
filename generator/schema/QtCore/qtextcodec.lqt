@@ -43,10 +43,9 @@
 #include <QtCore/qstring.lqt>
 #include <QtCore/qlist.lqt>
 
+QT_REQUIRE_CONFIG(textcodec);
+
 QT_BEGIN_NAMESPACE
-
-
-#ifndef QT_NO_TEXTCODEC
 
 class QTextCodec;
 class QIODevice;
@@ -68,9 +67,9 @@ public:
     static QTextCodec* codecForLocale();
     static void setCodecForLocale(QTextCodec *c);
 
-// #if QT_DEPRECATED_SINCE(5, 0)
-//     QT_DEPRECATED static QTextCodec *codecForTr() { return codecForMib(106); /* Utf8 */ }
-// #endif
+#if QT_DEPRECATED_SINCE(5, 0)
+    QT_DEPRECATED static QTextCodec *codecForTr() { return codecForMib(106); /* Utf8 */ }
+#endif
 
     static QTextCodec *codecForHtml(const QByteArray &ba);
     static QTextCodec *codecForHtml(const QByteArray &ba, QTextCodec *defaultCodec);
@@ -79,16 +78,16 @@ public:
     static QTextCodec *codecForUtfText(const QByteArray &ba, QTextCodec *defaultCodec);
 
     bool canEncode(QChar) const;
-// #if QT_STRINGVIEW_LEVEL < 2
+#if QT_STRINGVIEW_LEVEL < 2
     bool canEncode(const QString&) const;
-// #endif
+#endif
     bool canEncode(QStringView) const;
 
     QString toUnicode(const QByteArray&) const;
     QString toUnicode(const char* chars) const;
-// #if QT_STRINGVIEW_LEVEL < 2
+#if QT_STRINGVIEW_LEVEL < 2
     QByteArray fromUnicode(const QString& uc) const;
-// #endif
+#endif
     QByteArray fromUnicode(QStringView uc) const;
     enum ConversionFlag {
         DefaultConversion,
@@ -141,9 +140,9 @@ public:
     explicit QTextEncoder(const QTextCodec *codec) : c(codec), state() {}
     explicit QTextEncoder(const QTextCodec *codec, QTextCodec::ConversionFlags flags);
     ~QTextEncoder();
-// #if QT_STRINGVIEW_LEVEL < 2
+#if QT_STRINGVIEW_LEVEL < 2
     QByteArray fromUnicode(const QString& str);
-// #endif
+#endif
     QByteArray fromUnicode(QStringView str);
     QByteArray fromUnicode(const QChar *uc, int len);
     bool hasFailure() const;
@@ -167,8 +166,6 @@ private:
     const QTextCodec *c;
     QTextCodec::ConverterState state;
 };
-
-#endif // QT_NO_TEXTCODEC
 
 QT_END_NAMESPACE
 

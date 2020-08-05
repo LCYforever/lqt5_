@@ -46,7 +46,7 @@
 QT_BEGIN_NAMESPACE
 
 
-// #ifndef QT_NO_TEMPORARYFILE
+#ifndef QT_NO_TEMPORARYFILE
 
 class QTemporaryDirPrivate;
 
@@ -73,7 +73,7 @@ private:
     Q_DISABLE_COPY(QTemporaryDir)
 };
 
-// #endif // QT_NO_TEMPORARYFILE
+#endif // QT_NO_TEMPORARYFILE
 
 QT_END_NAMESPACE
 

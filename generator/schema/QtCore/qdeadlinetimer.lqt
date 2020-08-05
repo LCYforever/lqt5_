@@ -45,16 +45,14 @@
 #include <QtCore/qnamespace.lqt>
 #include <QtCore/qpair.lqt>
 
-// #ifdef max
-// // un-pollute the namespace. We need std::numeric_limits::max() and std::chrono::duration::max()
-// #  undef max
-// #endif
+#ifdef max
+// un-pollute the namespace. We need std::numeric_limits::max() and std::chrono::duration::max()
+#  undef max
+#endif
 
-// #include <limits>
 
-// #if QT_HAS_INCLUDE(<chrono>)
-// #  include <chrono>
-// #endif
+#if QT_HAS_INCLUDE(<chrono>)
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -121,72 +119,72 @@ public:
     QDeadlineTimer &operator-=(qint64 msecs)
     { *this = *this + (-msecs); return *this; }
 
-// #if QT_HAS_INCLUDE(<chrono>) || defined(Q_CLANG_QDOC)
-//     template <class Clock, class Duration>
-//     QDeadlineTimer(std::chrono::time_point<Clock, Duration> deadline_,
-//                    Qt::TimerType type_ = Qt::CoarseTimer) : t2(0)
-//     { setDeadline(deadline_, type_); }
-//     template <class Clock, class Duration>
-//     QDeadlineTimer &operator=(std::chrono::time_point<Clock, Duration> deadline_)
-//     { setDeadline(deadline_); return *this; }
+#if QT_HAS_INCLUDE(<chrono>) || defined(Q_CLANG_QDOC)
+    template <class Clock, class Duration>
+    QDeadlineTimer(std::chrono::time_point<Clock, Duration> deadline_,
+                   Qt::TimerType type_ = Qt::CoarseTimer) : t2(0)
+    { setDeadline(deadline_, type_); }
+    template <class Clock, class Duration>
+    QDeadlineTimer &operator=(std::chrono::time_point<Clock, Duration> deadline_)
+    { setDeadline(deadline_); return *this; }
 
-//     template <class Clock, class Duration>
-//     void setDeadline(std::chrono::time_point<Clock, Duration> deadline_,
-//                      Qt::TimerType type_ = Qt::CoarseTimer)
-//     { setRemainingTime(deadline_ == deadline_.max() ? Duration::max() : deadline_ - Clock::now(), type_); }
+    template <class Clock, class Duration>
+    void setDeadline(std::chrono::time_point<Clock, Duration> deadline_,
+                     Qt::TimerType type_ = Qt::CoarseTimer)
+    { setRemainingTime(deadline_ == deadline_.max() ? Duration::max() : deadline_ - Clock::now(), type_); }
 
-//     template <class Clock, class Duration = typename Clock::duration>
-//     std::chrono::time_point<Clock, Duration> deadline() const
-//     {
-//         auto val = std::chrono::nanoseconds(rawRemainingTimeNSecs()) + Clock::now();
-//         return std::chrono::time_point_cast<Duration>(val);
-//     }
+    template <class Clock, class Duration = typename Clock::duration>
+    std::chrono::time_point<Clock, Duration> deadline() const
+    {
+        auto val = std::chrono::nanoseconds(rawRemainingTimeNSecs()) + Clock::now();
+        return std::chrono::time_point_cast<Duration>(val);
+    }
 
-//     template <class Rep, class Period>
-//     QDeadlineTimer(std::chrono::duration<Rep, Period> remaining, Qt::TimerType type_ = Qt::CoarseTimer)
-//         : t2(0)
-//     { setRemainingTime(remaining, type_); }
+    template <class Rep, class Period>
+    QDeadlineTimer(std::chrono::duration<Rep, Period> remaining, Qt::TimerType type_ = Qt::CoarseTimer)
+        : t2(0)
+    { setRemainingTime(remaining, type_); }
 
-//     template <class Rep, class Period>
-//     QDeadlineTimer &operator=(std::chrono::duration<Rep, Period> remaining)
-//     { setRemainingTime(remaining); return *this; }
+    template <class Rep, class Period>
+    QDeadlineTimer &operator=(std::chrono::duration<Rep, Period> remaining)
+    { setRemainingTime(remaining); return *this; }
 
-//     template <class Rep, class Period>
-//     void setRemainingTime(std::chrono::duration<Rep, Period> remaining, Qt::TimerType type_ = Qt::CoarseTimer)
-//     {
-//         if (remaining == remaining.max())
-//             *this = QDeadlineTimer(Forever, type_);
-//         else
-//             setPreciseRemainingTime(0, std::chrono::nanoseconds(remaining).count(), type_);
-//     }
+    template <class Rep, class Period>
+    void setRemainingTime(std::chrono::duration<Rep, Period> remaining, Qt::TimerType type_ = Qt::CoarseTimer)
+    {
+        if (remaining == remaining.max())
+            *this = QDeadlineTimer(Forever, type_);
+        else
+            setPreciseRemainingTime(0, std::chrono::nanoseconds(remaining).count(), type_);
+    }
 
-//     std::chrono::nanoseconds remainingTimeAsDuration() const Q_DECL_NOTHROW
-//     {
-//         if (isForever())
-//             return std::chrono::nanoseconds::max();
-//         qint64 nsecs = rawRemainingTimeNSecs();
-//         if (nsecs <= 0)
-//             return std::chrono::nanoseconds::zero();
-//         return std::chrono::nanoseconds(nsecs);
-//     }
+    std::chrono::nanoseconds remainingTimeAsDuration() const Q_DECL_NOTHROW
+    {
+        if (isForever())
+            return std::chrono::nanoseconds::max();
+        qint64 nsecs = rawRemainingTimeNSecs();
+        if (nsecs <= 0)
+            return std::chrono::nanoseconds::zero();
+        return std::chrono::nanoseconds(nsecs);
+    }
 
-//     template <class Rep, class Period>
-//     friend QDeadlineTimer operator+(QDeadlineTimer dt, std::chrono::duration<Rep, Period> value)
-//     { return QDeadlineTimer::addNSecs(dt, std::chrono::duration_cast<std::chrono::nanoseconds>(value).count()); }
-//     template <class Rep, class Period>
-//     friend QDeadlineTimer operator+(std::chrono::duration<Rep, Period> value, QDeadlineTimer dt)
-//     { return dt + value; }
-//     template <class Rep, class Period>
-//     friend QDeadlineTimer operator+=(QDeadlineTimer &dt, std::chrono::duration<Rep, Period> value)
-//     { return dt = dt + value; }
-// #endif
+    template <class Rep, class Period>
+    friend QDeadlineTimer operator+(QDeadlineTimer dt, std::chrono::duration<Rep, Period> value)
+    { return QDeadlineTimer::addNSecs(dt, std::chrono::duration_cast<std::chrono::nanoseconds>(value).count()); }
+    template <class Rep, class Period>
+    friend QDeadlineTimer operator+(std::chrono::duration<Rep, Period> value, QDeadlineTimer dt)
+    { return dt + value; }
+    template <class Rep, class Period>
+    friend QDeadlineTimer operator+=(QDeadlineTimer &dt, std::chrono::duration<Rep, Period> value)
+    { return dt = dt + value; }
+#endif
 
-// private:
-//     qint64 t1;
-//     unsigned t2;
-//     unsigned type;
+private:
+    qint64 t1;
+    unsigned t2;
+    unsigned type;
 
-//     qint64 rawRemainingTimeNSecs() const Q_DECL_NOTHROW;
+    qint64 rawRemainingTimeNSecs() const Q_DECL_NOTHROW;
 
 public:
     // This is not a public function, it's here only for Qt's internal convenience...

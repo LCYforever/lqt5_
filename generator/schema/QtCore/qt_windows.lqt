@@ -61,7 +61,6 @@
 #ifndef NOMINMAX
 #  define NOMINMAX
 #endif
-// #include <windows.h>
 
 #if defined(_WIN32_IE) && _WIN32_IE < 0x0501
 #  undef _WIN32_IE

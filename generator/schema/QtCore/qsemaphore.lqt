@@ -74,14 +74,14 @@ private:
 class QSemaphoreReleaser
 {
 public:
-    QSemaphoreReleaser();
+    QSemaphoreReleaser() = default;
     explicit QSemaphoreReleaser(QSemaphore &sem, int n = 1) Q_DECL_NOTHROW
         : m_sem(&sem), m_n(n) {}
     explicit QSemaphoreReleaser(QSemaphore *sem, int n = 1) Q_DECL_NOTHROW
         : m_sem(sem), m_n(n) {}
-    // QSemaphoreReleaser(QSemaphoreReleaser &&other) Q_DECL_NOTHROW
-    //     : m_sem(other.m_sem), m_n(other.m_n)
-    // { other.m_sem = nullptr; }
+    QSemaphoreReleaser(QSemaphoreReleaser &&other) Q_DECL_NOTHROW
+        : m_sem(other.m_sem), m_n(other.m_n)
+    { other.m_sem = nullptr; }
     QSemaphoreReleaser &operator=(QSemaphoreReleaser &&other) Q_DECL_NOTHROW
     { QSemaphoreReleaser moved(std::move(other)); swap(moved); return *this; }
 
@@ -108,10 +108,8 @@ public:
     }
 
 private:
-    Q_DISABLE_COPY(QSemaphoreReleaser)
-
-    // QSemaphore *m_sem = nullptr;
-    // int m_n;
+    QSemaphore *m_sem = nullptr;
+    int m_n;
 };
 
 QT_END_NAMESPACE

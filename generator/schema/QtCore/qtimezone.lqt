@@ -47,10 +47,10 @@
 
 QT_REQUIRE_CONFIG(timezone);
 
-// #if (defined(Q_OS_DARWIN) || defined(Q_QDOC)) && !defined(QT_NO_SYSTEMLOCALE)
-// Q_FORWARD_DECLARE_CF_TYPE(CFTimeZone);
-// Q_FORWARD_DECLARE_OBJC_CLASS(NSTimeZone);
-// #endif
+#if (defined(Q_OS_DARWIN) || defined(Q_QDOC)) && !defined(QT_NO_SYSTEMLOCALE)
+Q_FORWARD_DECLARE_CF_TYPE(CFTimeZone);
+Q_FORWARD_DECLARE_OBJC_CLASS(NSTimeZone);
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -99,9 +99,9 @@ public:
     ~QTimeZone();
 
     QTimeZone &operator=(const QTimeZone &other);
-// #ifdef Q_COMPILER_RVALUE_REFS
-//     QTimeZone &operator=(QTimeZone &&other) Q_DECL_NOTHROW { swap(other); return *this; }
-// #endif
+ #ifdef Q_COMPILER_RVALUE_REFS
+    QTimeZone &operator=(QTimeZone &&other) Q_DECL_NOTHROW { swap(other); return *this; }
+#endif
 
     void swap(QTimeZone &other) Q_DECL_NOTHROW
     { d.swap(other.d); }
@@ -155,22 +155,22 @@ public:
     static QList<QByteArray> windowsIdToIanaIds(const QByteArray &windowsId,
                                                  QLocale::Country country);
 
-// #if (defined(Q_OS_DARWIN) || defined(Q_QDOC)) && !defined(QT_NO_SYSTEMLOCALE)
-//     static QTimeZone fromCFTimeZone(CFTimeZoneRef timeZone);
-//     CFTimeZoneRef toCFTimeZone() const Q_DECL_CF_RETURNS_RETAINED;
-//     static QTimeZone fromNSTimeZone(const NSTimeZone *timeZone);
-//     NSTimeZone *toNSTimeZone() const Q_DECL_NS_RETURNS_AUTORELEASED;
-// #endif
+#if (defined(Q_OS_DARWIN) || defined(Q_QDOC)) && !defined(QT_NO_SYSTEMLOCALE)
+    static QTimeZone fromCFTimeZone(CFTimeZoneRef timeZone);
+    CFTimeZoneRef toCFTimeZone() const Q_DECL_CF_RETURNS_RETAINED;
+    static QTimeZone fromNSTimeZone(const NSTimeZone *timeZone);
+    NSTimeZone *toNSTimeZone() const Q_DECL_NS_RETURNS_AUTORELEASED;
+#endif
 
 private:
     QTimeZone(QTimeZonePrivate &dd);
-// #ifndef QT_NO_DATASTREAM
-//     friend Q_CORE_EXPORT QDataStream &operator<<(QDataStream &ds, const QTimeZone &tz);
-// #endif
-//     friend class QTimeZonePrivate;
-//     friend class QDateTime;
-//     friend class QDateTimePrivate;
-//     QSharedDataPointer<QTimeZonePrivate> d;
+#ifndef QT_NO_DATASTREAM
+    friend Q_CORE_EXPORT QDataStream &operator<<(QDataStream &ds, const QTimeZone &tz);
+#endif
+    friend class QTimeZonePrivate;
+    friend class QDateTime;
+    friend class QDateTimePrivate;
+    QSharedDataPointer<QTimeZonePrivate> d;
 };
 
 Q_DECLARE_TYPEINFO(QTimeZone::OffsetData, Q_MOVABLE_TYPE);

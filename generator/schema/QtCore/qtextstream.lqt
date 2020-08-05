@@ -46,9 +46,10 @@
 #include <QtCore/qlocale.lqt>
 #include <QtCore/qscopedpointer.lqt>
 
-// #ifdef Status
-// #error qtextstream.h must be included before any header file that defines Status
-// #endif
+
+#ifdef Status
+#error qtextstream.h must be included before any header file that defines Status
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -96,7 +97,7 @@ public:
     explicit QTextStream(const QByteArray &array, QIODevice::OpenMode openMode = QIODevice::ReadOnly);
     virtual ~QTextStream();
 
-// #ifndef QT_NO_TEXTCODEC
+#if QT_CONFIG(textcodec)
     void setCodec(QTextCodec *codec);
     void setCodec(const char *codecName);
     QTextCodec *codec() const;
@@ -104,7 +105,7 @@ public:
     bool autoDetectUnicode() const;
     void setGenerateByteOrderMark(bool generate);
     bool generateByteOrderMark() const;
-// #endif
+#endif
 
     void setLocale(const QLocale &locale);
     QLocale locale() const;
@@ -194,7 +195,7 @@ private:
     friend class QDebugStateSaverPrivate;
     friend class QDebug;
 
-    // QScopedPointer<QTextStreamPrivate> d_ptr;
+    QScopedPointer<QTextStreamPrivate> d_ptr;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QTextStream::NumberFlags)
@@ -222,14 +223,14 @@ private:
     QChar ch;
 };
 
-// inline QTextStream &operator>>(QTextStream &s, QTextStreamFunction f)
-// { return (*f)(s); }
+inline QTextStream &operator>>(QTextStream &s, QTextStreamFunction f)
+{ return (*f)(s); }
 
-// inline QTextStream &operator<<(QTextStream &s, QTextStreamFunction f)
-// { return (*f)(s); }
+inline QTextStream &operator<<(QTextStream &s, QTextStreamFunction f)
+{ return (*f)(s); }
 
-// inline QTextStream &operator<<(QTextStream &s, QTextStreamManipulator m)
-// { m.exec(s); return s; }
+inline QTextStream &operator<<(QTextStream &s, QTextStreamManipulator m)
+{ m.exec(s); return s; }
 
 Q_CORE_EXPORT QTextStream &bin(QTextStream &s);
 Q_CORE_EXPORT QTextStream &oct(QTextStream &s);

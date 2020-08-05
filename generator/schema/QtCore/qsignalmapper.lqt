@@ -42,7 +42,7 @@
 
 #include <QtCore/qobject.lqt>
 
-// #if QT_DEPRECATED_SINCE(5, 10)
+#if QT_DEPRECATED_SINCE(5, 10)
 
 QT_BEGIN_NAMESPACE
 
@@ -50,7 +50,7 @@ class QSignalMapperPrivate;
 
 class Q_CORE_EXPORT QSignalMapper : public QObject
 {
-    LQT_OBJECT Q_OBJECT
+    LQT_OBJECT O_OBJECT
     Q_DECLARE_PRIVATE(QSignalMapper)
 public:
     QT_DEPRECATED explicit QSignalMapper(QObject *parent = nullptr);
@@ -84,6 +84,6 @@ private:
 
 QT_END_NAMESPACE
 
-// #endif
+#endif
 
 #endif // QSIGNALMAPPER_H

@@ -138,7 +138,7 @@ public:
     { return lhs.type() == rhs.type() && QOperatingSystemVersion::compare(lhs, rhs) <= 0; }
 
 private:
-    QOperatingSystemVersion();
+    QOperatingSystemVersion() = default;
     OSType m_os;
     int m_major;
     int m_minor;

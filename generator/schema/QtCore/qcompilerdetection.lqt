@@ -976,7 +976,6 @@
 #endif
 
 #ifdef __cplusplus
-// # include <utility>
 # if defined(Q_OS_QNX)
 // By default, QNX 7.0 uses libc++ (from LLVM) and
 // QNX 6.X uses Dinkumware's libcpp. In all versions,

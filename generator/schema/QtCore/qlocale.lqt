@@ -436,6 +436,11 @@ public:
         Cantonese = 357,
         Osage = 358,
         Tangut = 359,
+        Ido = 360,
+        Lojban = 361,
+        Sicilian = 362,
+        SouthernKurdish = 363,
+        WesternBalochi = 364,
 
         Afan = Oromo,
         Bhutani = Dzongkha,
@@ -452,7 +457,7 @@ public:
         Twi = Akan,
         Uigur = Uighur,
 
-        LastLanguage = Tangut
+        LastLanguage = WesternBalochi
     };
 
     enum Script {
@@ -934,9 +939,9 @@ public:
     QLocale(Language language, Country country = AnyCountry);
     QLocale(Language language, Script script, Country country);
     QLocale(const QLocale &other);
-// #ifdef Q_COMPILER_RVALUE_REFS
-//     QLocale &operator=(QLocale &&other) Q_DECL_NOTHROW { swap(other); return *this; }
-// #endif
+#ifdef Q_COMPILER_RVALUE_REFS
+    QLocale &operator=(QLocale &&other) Q_DECL_NOTHROW { swap(other); return *this; }
+#endif
     QLocale &operator=(const QLocale &other);
     ~QLocale();
 
@@ -951,11 +956,13 @@ public:
     QString nativeLanguageName() const;
     QString nativeCountryName() const;
 
-// #if QT_STRINGVIEW_LEVEL < 2
+#if QT_STRINGVIEW_LEVEL < 2
     short toShort(const QString &s, bool *ok = nullptr) const;
     ushort toUShort(const QString &s, bool *ok = nullptr) const;
     int toInt(const QString &s, bool *ok = nullptr) const;
     uint toUInt(const QString &s, bool *ok = nullptr) const;
+    long toLong(const QString &s, bool *ok = nullptr) const;
+    ulong toULong(const QString &s, bool *ok = nullptr) const;
     qlonglong toLongLong(const QString &s, bool *ok = nullptr) const;
     qulonglong toULongLong(const QString &s, bool *ok = nullptr) const;
     float toFloat(const QString &s, bool *ok = nullptr) const;
@@ -965,16 +972,20 @@ public:
     ushort toUShort(const QStringRef &s, bool *ok = nullptr) const;
     int toInt(const QStringRef &s, bool *ok = nullptr) const;
     uint toUInt(const QStringRef &s, bool *ok = nullptr) const;
+    long toLong(const QStringRef &s, bool *ok = nullptr) const;
+    ulong toULong(const QStringRef &s, bool *ok = nullptr) const;
     qlonglong toLongLong(const QStringRef &s, bool *ok = nullptr) const;
     qulonglong toULongLong(const QStringRef &s, bool *ok = nullptr) const;
     float toFloat(const QStringRef &s, bool *ok = nullptr) const;
     double toDouble(const QStringRef &s, bool *ok = nullptr) const;
-// #endif
+#endif
 
     short toShort(QStringView s, bool *ok = nullptr) const;
     ushort toUShort(QStringView s, bool *ok = nullptr) const;
     int toInt(QStringView s, bool *ok = nullptr) const;
     uint toUInt(QStringView s, bool *ok = nullptr) const;
+    long toLong(QStringView s, bool *ok = nullptr) const;
+    ulong toULong(QStringView s, bool *ok = nullptr) const;
     qlonglong toLongLong(QStringView s, bool *ok = nullptr) const;
     qulonglong toULongLong(QStringView s, bool *ok = nullptr) const;
     float toFloat(QStringView s, bool *ok = nullptr) const;
@@ -982,6 +993,8 @@ public:
 
     QString toString(qlonglong i) const;
     QString toString(qulonglong i) const;
+    inline QString toString(long i) const;
+    inline QString toString(ulong i) const;
     inline QString toString(short i) const;
     inline QString toString(ushort i) const;
     inline QString toString(int i) const;
@@ -989,11 +1002,11 @@ public:
     QString toString(double i, char f = 'g', int prec = 6) const;
     inline QString toString(float i, char f = 'g', int prec = 6) const;
 
-// #if QT_STRINGVIEW_LEVEL < 2
+#if QT_STRINGVIEW_LEVEL < 2
     QString toString(const QDate &date, const QString &formatStr) const;
     QString toString(const QTime &time, const QString &formatStr) const;
     QString toString(const QDateTime &dateTime, const QString &format) const;
-// #endif
+#endif
     QString toString(const QDate &date, QStringView formatStr) const;
     QString toString(const QTime &time, QStringView formatStr) const;
     QString toString(const QDateTime &dateTime, QStringView format) const;
@@ -1004,14 +1017,14 @@ public:
     QString dateFormat(FormatType format = LongFormat) const;
     QString timeFormat(FormatType format = LongFormat) const;
     QString dateTimeFormat(FormatType format = LongFormat) const;
-// #if QT_CONFIG(datestring)
+#if QT_CONFIG(datestring)
     QDate toDate(const QString &string, FormatType = LongFormat) const;
     QTime toTime(const QString &string, FormatType = LongFormat) const;
     QDateTime toDateTime(const QString &string, FormatType format = LongFormat) const;
     QDate toDate(const QString &string, const QString &format) const;
     QTime toTime(const QString &string, const QString &format) const;
     QDateTime toDateTime(const QString &string, const QString &format) const;
-// #endif
+#endif
 
     // ### Qt 5: We need to return QString from these function since
     //           unicode data contains several characters for these fields.
@@ -1048,20 +1061,23 @@ public:
     inline QString toCurrencyString(ushort, const QString &symbol = QString()) const;
     inline QString toCurrencyString(int, const QString &symbol = QString()) const;
     inline QString toCurrencyString(uint, const QString &symbol = QString()) const;
-// #if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
-//     QString toCurrencyString(double, const QString &symbol = QString(), int precision = -1) const;
-//     inline QString toCurrencyString(float i, const QString &symbol = QString(), int precision = -1) const
-//     { return toCurrencyString(double(i), symbol, precision); }
-// #else
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+    QString toCurrencyString(double, const QString &symbol = QString(), int precision = -1) const;
+    inline QString toCurrencyString(float i, const QString &symbol = QString(), int precision = -1) const
+    { return toCurrencyString(double(i), symbol, precision); }
+#else
     QString toCurrencyString(double, const QString &symbol = QString()) const;
     QString toCurrencyString(double, const QString &symbol, int precision) const;
     inline QString toCurrencyString(float i, const QString &symbol = QString()) const
     { return toCurrencyString(double(i), symbol); }
     inline QString toCurrencyString(float i, const QString &symbol, int precision) const
     { return toCurrencyString(double(i), symbol, precision); }
-// #endif
+#endif
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     QString formattedDataSize(qint64 bytes, int precision = 2, DataSizeFormats format = DataSizeIecFormat);
+#endif
+    QString formattedDataSize(qint64 bytes, int precision = 2, DataSizeFormats format = DataSizeIecFormat) const;
 
     QStringList uiLanguages() const;
 
@@ -1091,6 +1107,7 @@ public:
 private:
     QLocale(QLocalePrivate &dd);
     friend class QLocalePrivate;
+    friend class QSystemLocale;
     friend Q_CORE_EXPORT uint qHash(const QLocale &key, uint seed) Q_DECL_NOTHROW;
 
     QSharedDataPointer<QLocalePrivate> d;
@@ -1098,25 +1115,29 @@ private:
 Q_DECLARE_SHARED(QLocale)
 Q_DECLARE_OPERATORS_FOR_FLAGS(QLocale::NumberOptions)
 
-// inline QString QLocale::toString(short i) const
-//     { return toString(qlonglong(i)); }
-// inline QString QLocale::toString(ushort i) const
-//     { return toString(qulonglong(i)); }
-// inline QString QLocale::toString(int i) const
-//     { return toString(qlonglong(i)); }
-// inline QString QLocale::toString(uint i) const
-//     { return toString(qulonglong(i)); }
-// inline QString QLocale::toString(float i, char f, int prec) const
-//     { return toString(double(i), f, prec); }
+inline QString QLocale::toString(long i) const
+    { return toString(qlonglong(i)); }
+inline QString QLocale::toString(ulong i) const
+    { return toString(qulonglong(i)); }
+inline QString QLocale::toString(short i) const
+    { return toString(qlonglong(i)); }
+inline QString QLocale::toString(ushort i) const
+    { return toString(qulonglong(i)); }
+inline QString QLocale::toString(int i) const
+    { return toString(qlonglong(i)); }
+inline QString QLocale::toString(uint i) const
+    { return toString(qulonglong(i)); }
+inline QString QLocale::toString(float i, char f, int prec) const
+    { return toString(double(i), f, prec); }
 
-// inline QString QLocale::toCurrencyString(short i, const QString &symbol) const
-//     { return toCurrencyString(qlonglong(i), symbol); }
-// inline QString QLocale::toCurrencyString(ushort i, const QString &symbol) const
-//     { return toCurrencyString(qulonglong(i), symbol); }
-// inline QString QLocale::toCurrencyString(int i, const QString &symbol) const
-// { return toCurrencyString(qlonglong(i), symbol); }
-// inline QString QLocale::toCurrencyString(uint i, const QString &symbol) const
-// { return toCurrencyString(qulonglong(i), symbol); }
+inline QString QLocale::toCurrencyString(short i, const QString &symbol) const
+    { return toCurrencyString(qlonglong(i), symbol); }
+inline QString QLocale::toCurrencyString(ushort i, const QString &symbol) const
+    { return toCurrencyString(qulonglong(i), symbol); }
+inline QString QLocale::toCurrencyString(int i, const QString &symbol) const
+{ return toCurrencyString(qlonglong(i), symbol); }
+inline QString QLocale::toCurrencyString(uint i, const QString &symbol) const
+{ return toCurrencyString(qulonglong(i), symbol); }
 
 #ifndef QT_NO_DATASTREAM
 Q_CORE_EXPORT QDataStream &operator<<(QDataStream &, const QLocale &);

@@ -48,6 +48,7 @@
 #include "qcommandlineparser.lqt"
 // #endif
 #include "qcompilerdetection.lqt"
+#include "qconcatenatetablesproxymodel.lqt"
 #include "qcontainerfwd.lqt"
 #include "qcontiguouscache.lqt"
 #include "qcoreapplication.lqt"
@@ -186,7 +187,9 @@
 #include "qsequentialanimationgroup.lqt"
 // #endif
 #include "qset.lqt"
+// #if QT_CONFIG(settings)
 #include "qsettings.lqt"
+// #endif
 #include "qshareddata.lqt"
 #include "qsharedmemory.lqt"
 #include "qsharedpointer.lqt"
@@ -224,7 +227,9 @@
 #include "qtemporarydir.lqt"
 #include "qtemporaryfile.lqt"
 #include "qtextboundaryfinder.lqt"
+// #if QT_CONFIG(textcodec)
 #include "qtextcodec.lqt"
+// #endif
 #include "qtextstream.lqt"
 #include "qthread.lqt"
 // #if QT_CONFIG(thread)
@@ -237,6 +242,7 @@
 #include "qtimezone.lqt"
 // #endif
 #include "qtranslator.lqt"
+#include "qtransposeproxymodel.lqt"
 #include "qtypeinfo.lqt"
 #include "qtypetraits.lqt"
 #include "qurl.lqt"

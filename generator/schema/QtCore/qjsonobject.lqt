@@ -42,9 +42,9 @@
 
 #include <QtCore/qjsonvalue.lqt>
 #include <QtCore/qiterator.lqt>
-// #ifdef Q_COMPILER_INITIALIZER_LISTS
+#ifdef Q_COMPILER_INITIALIZER_LISTS
 #include <QtCore/qpair.lqt>
-// #endif
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -59,14 +59,14 @@ class Q_CORE_EXPORT QJsonObject
 public:
     QJsonObject();
 
-// #if defined(Q_COMPILER_INITIALIZER_LISTS) || defined(Q_QDOC)
-//     QJsonObject(std::initializer_list<QPair<QString, QJsonValue> > args)
-//     {
-//         initialize();
-//         for (std::initializer_list<QPair<QString, QJsonValue> >::const_iterator i = args.begin(); i != args.end(); ++i)
-//             insert(i->first, i->second);
-//     }
-// #endif
+#if defined(Q_COMPILER_INITIALIZER_LISTS) || defined(Q_QDOC)
+    QJsonObject(std::initializer_list<QPair<QString, QJsonValue> > args)
+    {
+        initialize();
+        for (std::initializer_list<QPair<QString, QJsonValue> >::const_iterator i = args.begin(); i != args.end(); ++i)
+            insert(i->first, i->second);
+    }
+#endif
 
     ~QJsonObject();
 
@@ -140,11 +140,11 @@ public:
         inline QString key() const { return o->keyAt(i); }
         inline QJsonValueRef value() const { return QJsonValueRef(o, i); }
         inline QJsonValueRef operator*() const { return QJsonValueRef(o, i); }
-// #ifdef Q_QDOC
-//         inline QJsonValueRef* operator->() const;
-// #else
+#ifdef Q_QDOC
+        inline QJsonValueRef* operator->() const;
+#else
         inline QJsonValueRefPtr operator->() const { return QJsonValueRefPtr(o, i); }
-// #endif
+#endif
         inline bool operator==(const iterator &other) const { return i == other.i; }
         inline bool operator!=(const iterator &other) const { return i != other.i; }
 
@@ -186,11 +186,11 @@ public:
         inline QString key() const { return o->keyAt(i); }
         inline QJsonValue value() const { return o->valueAt(i); }
         inline QJsonValue operator*() const { return o->valueAt(i); }
-// #ifdef Q_QDOC
-//         inline QJsonValue* operator->() const;
-// #else
+#ifdef Q_QDOC
+        inline QJsonValue* operator->() const;
+#else
         inline QJsonValuePtr operator->() const { return QJsonValuePtr(o->valueAt(i)); }
-// #endif
+#endif
         inline bool operator==(const const_iterator &other) const { return i == other.i; }
         inline bool operator!=(const const_iterator &other) const { return i != other.i; }
 
@@ -265,6 +265,11 @@ Q_CORE_EXPORT uint qHash(const QJsonObject &object, uint seed = 0);
 
 #if !defined(QT_NO_DEBUG_STREAM) && !defined(QT_JSON_READONLY)
 Q_CORE_EXPORT QDebug operator<<(QDebug, const QJsonObject &);
+#endif
+
+#ifndef QT_NO_DATASTREAM
+Q_CORE_EXPORT QDataStream &operator<<(QDataStream &, const QJsonObject &);
+Q_CORE_EXPORT QDataStream &operator>>(QDataStream &, QJsonObject &);
 #endif
 
 QT_END_NAMESPACE

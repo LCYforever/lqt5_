@@ -53,14 +53,14 @@ class QAbstractState;
 class QState;
 class QStateMachine;
 
-// #if QT_CONFIG(animation)
+#if QT_CONFIG(animation)
 class QAbstractAnimation;
-// #endif
+#endif
 
 class QAbstractTransitionPrivate;
 class Q_CORE_EXPORT QAbstractTransition : public QObject
 {
-    LQT_OBJECT Q_OBJECT
+    LQT_OBJECT O_OBJECT
     Q_PROPERTY(QState* sourceState READ sourceState)
     Q_PROPERTY(QAbstractState* targetState READ targetState WRITE setTargetState NOTIFY targetStateChanged)
     Q_PROPERTY(QList<QAbstractState*> targetStates READ targetStates WRITE setTargetStates NOTIFY targetStatesChanged)
@@ -86,11 +86,11 @@ public:
 
     QStateMachine *machine() const;
 
-// #if QT_CONFIG(animation)
+#if QT_CONFIG(animation)
     void addAnimation(QAbstractAnimation *animation);
     void removeAnimation(QAbstractAnimation *animation);
     QList<QAbstractAnimation*> animations() const;
-// #endif
+#endif
 
 Q_SIGNALS:
     void triggered(QPrivateSignal);

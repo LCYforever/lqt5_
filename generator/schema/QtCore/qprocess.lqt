@@ -44,23 +44,26 @@
 #include <QtCore/qstringlist.lqt>
 #include <QtCore/qshareddata.lqt>
 
+
 QT_REQUIRE_CONFIG(processenvironment);
+
+#ifdef Q_OS_WIN
+typedef struct _PROCESS_INFORMATION *Q_PID;
+#endif
+
+#if defined(Q_OS_WIN) || defined(Q_CLANG_QDOC)
+typedef struct _SECURITY_ATTRIBUTES Q_SECURITY_ATTRIBUTES;
+typedef struct _STARTUPINFOW Q_STARTUPINFO;
+#endif
 
 QT_BEGIN_NAMESPACE
 
 class QProcessPrivate;
-
-// #if !defined(Q_OS_WIN) || defined(Q_CLANG_QDOC)
-typedef qint64 Q_PID;
-// #else
-// QT_END_NAMESPACE
-// typedef struct _PROCESS_INFORMATION *Q_PID;
-// typedef struct _SECURITY_ATTRIBUTES Q_SECURITY_ATTRIBUTES;
-// typedef struct _STARTUPINFOW Q_STARTUPINFO;
-// QT_BEGIN_NAMESPACE
-// #endif
-
 class QProcessEnvironmentPrivate;
+
+#ifndef Q_OS_WIN
+typedef qint64 Q_PID;
+#endif
 
 class Q_CORE_EXPORT QProcessEnvironment
 {
@@ -68,9 +71,9 @@ public:
     QProcessEnvironment();
     QProcessEnvironment(const QProcessEnvironment &other);
     ~QProcessEnvironment();
-// #ifdef Q_COMPILER_RVALUE_REFS
-//     QProcessEnvironment &operator=(QProcessEnvironment && other) Q_DECL_NOTHROW { swap(other); return *this; }
-// #endif
+#ifdef Q_COMPILER_RVALUE_REFS
+    QProcessEnvironment &operator=(QProcessEnvironment && other) Q_DECL_NOTHROW { swap(other); return *this; }
+#endif
     QProcessEnvironment &operator=(const QProcessEnvironment &other);
 
     void swap(QProcessEnvironment &other) Q_DECL_NOTHROW { qSwap(d, other.d); }
@@ -103,11 +106,11 @@ private:
 
 Q_DECLARE_SHARED(QProcessEnvironment)
 
-// #if QT_CONFIG(process)
+#if QT_CONFIG(process)
 
 class Q_CORE_EXPORT QProcess : public QIODevice
 {
-    LQT_OBJECT Q_OBJECT
+    LQT_OBJECT O_OBJECT
 public:
     enum ProcessError {
         FailedToStart, //### file not found, resource error
@@ -157,9 +160,9 @@ public:
     virtual ~QProcess();
 
     void start(const QString &program, const QStringList &arguments, OpenMode mode = ReadWrite);
-// #if !defined(QT_NO_PROCESS_COMBINED_ARGUMENT_START)
+#if !defined(QT_NO_PROCESS_COMBINED_ARGUMENT_START)
     void start(const QString &command, OpenMode mode = ReadWrite);
-// #endif
+#endif
     void start(OpenMode mode = ReadWrite);
     bool startDetached(qint64 *pid = nullptr);
     bool open(OpenMode mode = ReadWrite) override;
@@ -170,8 +173,12 @@ public:
     QStringList arguments() const;
     void setArguments(const QStringList & arguments);
 
+#if QT_DEPRECATED_SINCE(5, 13)
+    QT_DEPRECATED_X("Use QProcess::processChannelMode() instead")
     ProcessChannelMode readChannelMode() const;
+    QT_DEPRECATED_X("Use QProcess::setProcessChannelMode() instead")
     void setReadChannelMode(ProcessChannelMode mode);
+#endif
     ProcessChannelMode processChannelMode() const;
     void setProcessChannelMode(ProcessChannelMode mode);
     InputChannelMode inputChannelMode() const;
@@ -188,26 +195,26 @@ public:
     void setStandardErrorFile(const QString &fileName, OpenMode mode = Truncate);
     void setStandardOutputProcess(QProcess *destination);
 
-// #if defined(Q_OS_WIN) || defined(Q_CLANG_QDOC)
-//     QString nativeArguments() const;
-//     void setNativeArguments(const QString &arguments);
-//     struct CreateProcessArguments
-//     {
-//         const wchar_t *applicationName;
-//         wchar_t *arguments;
-//         Q_SECURITY_ATTRIBUTES *processAttributes;
-//         Q_SECURITY_ATTRIBUTES *threadAttributes;
-//         bool inheritHandles;
-//         unsigned long flags;
-//         void *environment;
-//         const wchar_t *currentDirectory;
-//         Q_STARTUPINFO *startupInfo;
-//         Q_PID processInformation;
-//     };
-//     typedef std::function<void(CreateProcessArguments *)> CreateProcessArgumentModifier;
-//     CreateProcessArgumentModifier createProcessArgumentsModifier() const;
-//     void setCreateProcessArgumentsModifier(CreateProcessArgumentModifier modifier);
-// #endif // Q_OS_WIN || Q_CLANG_QDOC
+#if defined(Q_OS_WIN) || defined(Q_CLANG_QDOC)
+    QString nativeArguments() const;
+    void setNativeArguments(const QString &arguments);
+    struct CreateProcessArguments
+    {
+        const wchar_t *applicationName;
+        wchar_t *arguments;
+        Q_SECURITY_ATTRIBUTES *processAttributes;
+        Q_SECURITY_ATTRIBUTES *threadAttributes;
+        bool inheritHandles;
+        unsigned long flags;
+        void *environment;
+        const wchar_t *currentDirectory;
+        Q_STARTUPINFO *startupInfo;
+        Q_PID processInformation;
+    };
+    typedef std::function<void(CreateProcessArguments *)> CreateProcessArgumentModifier;
+    CreateProcessArgumentModifier createProcessArgumentsModifier() const;
+    void setCreateProcessArgumentsModifier(CreateProcessArgumentModifier modifier);
+#endif // Q_OS_WIN || Q_CLANG_QDOC
 
     QString workingDirectory() const;
     void setWorkingDirectory(const QString &dir);
@@ -221,7 +228,7 @@ public:
     QProcess::ProcessState state() const;
 
     // #### Qt 5: Q_PID is a pointer on Windows and a value on Unix
-    //Q_PID pid() const;
+    Q_PID pid() const;
     qint64 processId() const;
 
     bool waitForStarted(int msecs = 30000);
@@ -248,13 +255,13 @@ public:
 
     static bool startDetached(const QString &program, const QStringList &arguments,
                               const QString &workingDirectory
-// #if defined(Q_QDOC)
-//                               = QString()
-// #endif
+#if defined(Q_QDOC)
+                              = QString()
+#endif
                               , qint64 *pid = nullptr);
-// #if !defined(Q_QDOC)
+#if !defined(Q_QDOC)
     static bool startDetached(const QString &program, const QStringList &arguments); // ### Qt6: merge overloads
-// #endif
+#endif
     static bool startDetached(const QString &command);
 
     static QStringList systemEnvironment();
@@ -267,11 +274,14 @@ public Q_SLOTS:
 
 Q_SIGNALS:
     void started(QPrivateSignal);
+#if QT_DEPRECATED_SINCE(5, 13)
+    QT_DEPRECATED_X("Use QProcess::finished(int, QProcess::ExitStatus) instead")
     void finished(int exitCode); // ### Qt 6: merge the two signals with a default value
+#endif
     void finished(int exitCode, QProcess::ExitStatus exitStatus);
-// #if QT_DEPRECATED_SINCE(5,6)
-//     void error(QProcess::ProcessError error);
-// #endif
+#if QT_DEPRECATED_SINCE(5,6)
+    void error(QProcess::ProcessError error);
+#endif
     void errorOccurred(QProcess::ProcessError error);
     void stateChanged(QProcess::ProcessState state, QPrivateSignal);
 
@@ -299,7 +309,7 @@ private:
     friend class QProcessManager;
 };
 
-// #endif // QT_CONFIG(process)
+#endif // QT_CONFIG(process)
 
 QT_END_NAMESPACE
 

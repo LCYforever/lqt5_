@@ -41,21 +41,21 @@
 #define QPLUGINLOADER_H
 
 #include <QtCore/qglobal.lqt>
-// #if QT_CONFIG(library)
+#if QT_CONFIG(library)
 #include <QtCore/qlibrary.lqt>
-// #endif
+#endif
 #include <QtCore/qplugin.lqt>
 
 QT_BEGIN_NAMESPACE
 
-// #if QT_CONFIG(library)
+#if QT_CONFIG(library)
 
 class QLibraryPrivate;
 class QJsonObject;
 
 class Q_CORE_EXPORT QPluginLoader : public QObject
 {
-    LQT_OBJECT Q_OBJECT
+    LQT_OBJECT O_OBJECT
     Q_PROPERTY(QString fileName READ fileName WRITE setFileName)
     Q_PROPERTY(QLibrary::LoadHints loadHints READ loadHints WRITE setLoadHints)
 public:
@@ -87,16 +87,16 @@ private:
     Q_DISABLE_COPY(QPluginLoader)
 };
 
-// #else
+#else
 
-// class Q_CORE_EXPORT QPluginLoader
-// {
-// public:
-//     static QObjectList staticInstances();
-//     static QVector<QStaticPlugin> staticPlugins();
-// };
+class Q_CORE_EXPORT QPluginLoader
+{
+public:
+    static QObjectList staticInstances();
+    static QVector<QStaticPlugin> staticPlugins();
+};
 
-// #endif // QT_CONFIG(library)
+#endif // QT_CONFIG(library)
 
 QT_END_NAMESPACE
 

@@ -44,17 +44,16 @@
 #include <QtCore/qstring.lqt>
 #include <QtCore/qpair.lqt>
 
-// #include <numeric> // for std::accumulate
 
 #if 0
 #pragma qt_class(QHashFunctions)
 #endif
 
-// #if defined(Q_CC_MSVC)
-// #pragma warning( push )
-// #pragma warning( disable : 4311 ) // disable pointer truncation warning
-// #pragma warning( disable : 4127 ) // conditional expression is constant
-// #endif
+#if defined(Q_CC_MSVC)
+#pragma warning( push )
+#pragma warning( disable : 4311 ) // disable pointer truncation warning
+#pragma warning( disable : 4127 ) // conditional expression is constant
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -117,29 +116,29 @@ template<typename T> inline uint qHash(const T &t, uint seed)
     Q_DECL_NOEXCEPT_EXPR(noexcept(qHash(t)))
 { return qHash(t) ^ seed; }
 
-// namespace QtPrivate {
+namespace QtPrivate {
 
-// struct QHashCombine {
-//     typedef uint result_type;
-//     template <typename T>
-//     Q_DECL_CONSTEXPR result_type operator()(uint seed, const T &t) const Q_DECL_NOEXCEPT_EXPR(noexcept(qHash(t)))
-//     // combiner taken from N3876 / boost::hash_combine
-//     { return seed ^ (qHash(t) + 0x9e3779b9 + (seed << 6) + (seed >> 2)) ; }
-// };
+struct QHashCombine {
+    typedef uint result_type;
+    template <typename T>
+    Q_DECL_CONSTEXPR result_type operator()(uint seed, const T &t) const Q_DECL_NOEXCEPT_EXPR(noexcept(qHash(t)))
+    // combiner taken from N3876 / boost::hash_combine
+    { return seed ^ (qHash(t) + 0x9e3779b9 + (seed << 6) + (seed >> 2)) ; }
+};
 
-// struct QHashCombineCommutative {
-//     // QHashCombine is a good hash combiner, but is not commutative,
-//     // ie. it depends on the order of the input elements. That is
-//     // usually what we want: {0,1,3} should hash differently than
-//     // {1,3,0}. Except when it isn't (e.g. for QSet and
-//     // QHash). Therefore, provide a commutative combiner, too.
-//     typedef uint result_type;
-//     template <typename T>
-//     Q_DECL_CONSTEXPR result_type operator()(uint seed, const T &t) const Q_DECL_NOEXCEPT_EXPR(noexcept(qHash(t)))
-//     { return seed + qHash(t); } // don't use xor!
-// };
+struct QHashCombineCommutative {
+    // QHashCombine is a good hash combiner, but is not commutative,
+    // ie. it depends on the order of the input elements. That is
+    // usually what we want: {0,1,3} should hash differently than
+    // {1,3,0}. Except when it isn't (e.g. for QSet and
+    // QHash). Therefore, provide a commutative combiner, too.
+    typedef uint result_type;
+    template <typename T>
+    Q_DECL_CONSTEXPR result_type operator()(uint seed, const T &t) const Q_DECL_NOEXCEPT_EXPR(noexcept(qHash(t)))
+    { return seed + qHash(t); } // don't use xor!
+};
 
-// } // namespace QtPrivate
+} // namespace QtPrivate
 
 template <typename InputIterator>
 inline uint qHashRange(InputIterator first, InputIterator last, uint seed = 0)

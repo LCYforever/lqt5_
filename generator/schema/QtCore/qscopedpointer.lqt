@@ -42,6 +42,7 @@
 
 #include <QtCore/qglobal.lqt>
 
+
 QT_BEGIN_NAMESPACE
 
 template <typename T>
@@ -121,17 +122,17 @@ public:
         return !d;
     }
 
-// #if defined(Q_QDOC)
-//     inline operator bool() const
-//     {
-//         return isNull() ? nullptr : &QScopedPointer::d;
-//     }
-// #else
+#if defined(Q_QDOC)
+    inline operator bool() const
+    {
+        return isNull() ? nullptr : &QScopedPointer::d;
+    }
+#else
     operator RestrictedBool() const Q_DECL_NOTHROW
     {
         return isNull() ? nullptr : &QScopedPointer::d;
     }
-// #endif
+#endif
 
     T *data() const Q_DECL_NOTHROW
     {
@@ -171,58 +172,58 @@ public:
 
     typedef T *pointer;
 
-// protected:
-//     T *d;
+protected:
+    T *d;
 
 private:
     Q_DISABLE_COPY(QScopedPointer)
 };
 
-// template <class T, class Cleanup>
-// inline bool operator==(const QScopedPointer<T, Cleanup> &lhs, const QScopedPointer<T, Cleanup> &rhs) Q_DECL_NOTHROW
-// {
-//     return lhs.data() == rhs.data();
-// }
+template <class T, class Cleanup>
+inline bool operator==(const QScopedPointer<T, Cleanup> &lhs, const QScopedPointer<T, Cleanup> &rhs) Q_DECL_NOTHROW
+{
+    return lhs.data() == rhs.data();
+}
 
-// template <class T, class Cleanup>
-// inline bool operator!=(const QScopedPointer<T, Cleanup> &lhs, const QScopedPointer<T, Cleanup> &rhs) Q_DECL_NOTHROW
-// {
-//     return lhs.data() != rhs.data();
-// }
+template <class T, class Cleanup>
+inline bool operator!=(const QScopedPointer<T, Cleanup> &lhs, const QScopedPointer<T, Cleanup> &rhs) Q_DECL_NOTHROW
+{
+    return lhs.data() != rhs.data();
+}
 
-// template <class T, class Cleanup>
-// inline bool operator==(const QScopedPointer<T, Cleanup> &lhs, std::nullptr_t) Q_DECL_NOTHROW
-// {
-//     return lhs.isNull();
-// }
+template <class T, class Cleanup>
+inline bool operator==(const QScopedPointer<T, Cleanup> &lhs, std::nullptr_t) Q_DECL_NOTHROW
+{
+    return lhs.isNull();
+}
 
-// template <class T, class Cleanup>
-// inline bool operator==(std::nullptr_t, const QScopedPointer<T, Cleanup> &rhs) Q_DECL_NOTHROW
-// {
-//     return rhs.isNull();
-// }
+template <class T, class Cleanup>
+inline bool operator==(std::nullptr_t, const QScopedPointer<T, Cleanup> &rhs) Q_DECL_NOTHROW
+{
+    return rhs.isNull();
+}
 
-// template <class T, class Cleanup>
-// inline bool operator!=(const QScopedPointer<T, Cleanup> &lhs, std::nullptr_t) Q_DECL_NOTHROW
-// {
-//     return !lhs.isNull();
-// }
+template <class T, class Cleanup>
+inline bool operator!=(const QScopedPointer<T, Cleanup> &lhs, std::nullptr_t) Q_DECL_NOTHROW
+{
+    return !lhs.isNull();
+}
 
-// template <class T, class Cleanup>
-// inline bool operator!=(std::nullptr_t, const QScopedPointer<T, Cleanup> &rhs) Q_DECL_NOTHROW
-// {
-//     return !rhs.isNull();
-// }
+template <class T, class Cleanup>
+inline bool operator!=(std::nullptr_t, const QScopedPointer<T, Cleanup> &rhs) Q_DECL_NOTHROW
+{
+    return !rhs.isNull();
+}
 
-// template <class T, class Cleanup>
-// inline void swap(QScopedPointer<T, Cleanup> &p1, QScopedPointer<T, Cleanup> &p2) Q_DECL_NOTHROW
-// { p1.swap(p2); }
+template <class T, class Cleanup>
+inline void swap(QScopedPointer<T, Cleanup> &p1, QScopedPointer<T, Cleanup> &p2) Q_DECL_NOTHROW
+{ p1.swap(p2); }
 
 template <typename T, typename Cleanup = QScopedPointerArrayDeleter<T> >
 class QScopedArrayPointer : public QScopedPointer<T, Cleanup>
 {
-    // template <typename Ptr>
-    // using if_same_type = typename std::enable_if<std::is_same<typename std::remove_cv<T>::type, Ptr>::value, bool>::type;
+    template <typename Ptr>
+    using if_same_type = typename std::enable_if<std::is_same<typename std::remove_cv<T>::type, Ptr>::value, bool>::type;
 public:
     inline QScopedArrayPointer() : QScopedPointer<T, Cleanup>(nullptr) {}
 
@@ -246,23 +247,23 @@ public:
     { QScopedPointer<T, Cleanup>::swap(other); }
 
 private:
-    // explicit inline QScopedArrayPointer(void *) {
-    //     // Enforce the same type.
+    explicit inline QScopedArrayPointer(void *) {
+        // Enforce the same type.
 
-    //     // If you get a compile error here, make sure you declare
-    //     // QScopedArrayPointer with the same template type as you pass to the
-    //     // constructor. See also the QScopedPointer documentation.
+        // If you get a compile error here, make sure you declare
+        // QScopedArrayPointer with the same template type as you pass to the
+        // constructor. See also the QScopedPointer documentation.
 
-    //     // Storing a scalar array as a pointer to a different type is not
-    //     // allowed and results in undefined behavior.
-    // }
+        // Storing a scalar array as a pointer to a different type is not
+        // allowed and results in undefined behavior.
+    }
 
     Q_DISABLE_COPY(QScopedArrayPointer)
 };
 
-// template <typename T, typename Cleanup>
-// inline void swap(QScopedArrayPointer<T, Cleanup> &lhs, QScopedArrayPointer<T, Cleanup> &rhs) Q_DECL_NOTHROW
-// { lhs.swap(rhs); }
+template <typename T, typename Cleanup>
+inline void swap(QScopedArrayPointer<T, Cleanup> &lhs, QScopedArrayPointer<T, Cleanup> &rhs) Q_DECL_NOTHROW
+{ lhs.swap(rhs); }
 
 QT_END_NAMESPACE
 

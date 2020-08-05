@@ -86,6 +86,7 @@ void pp::file (FILE *fp, _OutputIterator __result)
       buffer += tmp;
   }
   fclose (fp);
+  const char * test = buffer.c_str();
   this->operator () (buffer.c_str(), buffer.c_str() + buffer.size(), __result);
 #endif
 }
@@ -685,7 +686,9 @@ inline bool pp::test_if_level()
 }
 
 inline int pp::skipping() const
-{ return _M_skipping[iflevel]; }
+{ 
+	return _M_skipping[iflevel]; 
+}
 
 template <typename _InputIterator>
 _InputIterator pp::eval_primary(_InputIterator __first, _InputIterator __last, Value *result)

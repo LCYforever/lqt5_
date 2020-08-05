@@ -48,10 +48,10 @@
 #include <QtCore/qpair.lqt>
 #include <QtCore/qglobal.lqt>
 
-// #if defined(Q_OS_DARWIN) || defined(Q_QDOC)
-// Q_FORWARD_DECLARE_CF_TYPE(CFURL);
-// Q_FORWARD_DECLARE_OBJC_CLASS(NSURL);
-// #endif
+#if defined(Q_OS_DARWIN) || defined(Q_QDOC)
+Q_FORWARD_DECLARE_CF_TYPE(CFURL);
+Q_FORWARD_DECLARE_OBJC_CLASS(NSURL);
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -63,12 +63,14 @@ class QDataStream;
 template <typename E1, typename E2>
 class QUrlTwoFlags
 {
+    int i;
+    typedef int QUrlTwoFlags:: *Zero;
 public:
     Q_DECL_CONSTEXPR inline QUrlTwoFlags(E1 f) : i(f) {}
     Q_DECL_CONSTEXPR inline QUrlTwoFlags(E2 f) : i(f) {}
     Q_DECL_CONSTEXPR inline QUrlTwoFlags(QFlag f) : i(f) {}
-    Q_DECL_CONSTEXPR inline QUrlTwoFlags(QFlags<E1> f);
-    Q_DECL_CONSTEXPR inline QUrlTwoFlags(QFlags<E2> f);
+    Q_DECL_CONSTEXPR inline QUrlTwoFlags(QFlags<E1> f) : i(f.operator typename QFlags<E1>::Int()) {}
+    Q_DECL_CONSTEXPR inline QUrlTwoFlags(QFlags<E2> f) : i(f.operator typename QFlags<E2>::Int()) {}
     Q_DECL_CONSTEXPR inline QUrlTwoFlags(Zero = 0) : i(0) {}
 
     inline QUrlTwoFlags &operator&=(int mask) { i &= mask; return *this; }
@@ -112,7 +114,10 @@ public:
     Q_DECL_CONSTEXPR inline bool testFlag(E2 f) const { return (i & f) == f && (f != 0 || i == int(f)); }
 };
 
-// class QUrl;
+template<typename E1, typename E2>
+class QTypeInfo<QUrlTwoFlags<E1, E2> > : public QTypeInfoMerger<QUrlTwoFlags<E1, E2>, E1, E2> {};
+
+class QUrl;
 // qHash is a friend, but we can't use default arguments for friends (§8.3.6.4)
 Q_CORE_EXPORT uint qHash(const QUrl &url, uint seed = 0) Q_DECL_NOTHROW;
 
@@ -156,17 +161,17 @@ public:
         FullyDecoded = FullyEncoded | DecodeReserved | 0x4000000
     };
     Q_DECLARE_FLAGS(ComponentFormattingOptions, ComponentFormattingOption)
-// #ifdef Q_QDOC
-// private:
-//     // We need to let qdoc think that FormattingOptions is a normal QFlags, but
-//     // it needs to be a QUrlTwoFlags for compiling default arguments of somme functions.
-//     template<typename T> struct QFlags : QUrlTwoFlags<T, ComponentFormattingOption>
-//     { using QUrlTwoFlags<T, ComponentFormattingOption>::QUrlTwoFlags; };
-// public:
+#ifdef Q_QDOC
+private:
+    // We need to let qdoc think that FormattingOptions is a normal QFlags, but
+    // it needs to be a QUrlTwoFlags for compiling default arguments of somme functions.
+    template<typename T> struct QFlags : QUrlTwoFlags<T, ComponentFormattingOption>
+    { using QUrlTwoFlags<T, ComponentFormattingOption>::QUrlTwoFlags; };
+public:
     Q_DECLARE_FLAGS(FormattingOptions, UrlFormattingOption)
-// #else
-//     typedef QUrlTwoFlags<UrlFormattingOption, ComponentFormattingOption> FormattingOptions;
-// #endif
+#else
+    typedef QUrlTwoFlags<UrlFormattingOption, ComponentFormattingOption> FormattingOptions;
+#endif
 
     QUrl();
     QUrl(const QUrl &copy);
@@ -230,9 +235,9 @@ public:
 
     void setHost(const QString &host, ParsingMode mode = DecodedMode);
     QString host(ComponentFormattingOptions = FullyDecoded) const;
-// #if QT_CONFIG(topleveldomain)
+#if QT_CONFIG(topleveldomain)
     QString topLevelDomain(ComponentFormattingOptions options = FullyDecoded) const;
-// #endif
+#endif
 
     void setPort(int port);
     int port(int defaultPort = -1) const;
@@ -359,17 +364,61 @@ public:
     friend Q_CORE_EXPORT uint qHash(const QUrl &url, uint seed) Q_DECL_NOTHROW;
 
 private:
+    QUrlPrivate *d;
     friend class QUrlQuery;
+
+public:
+    typedef QUrlPrivate * DataPtr;
+    inline DataPtr &data_ptr() { return d; }
 };
 
 Q_DECLARE_SHARED(QUrl)
 Q_DECLARE_OPERATORS_FOR_FLAGS(QUrl::ComponentFormattingOptions)
 //Q_DECLARE_OPERATORS_FOR_FLAGS(QUrl::FormattingOptions)
 
+#ifndef Q_QDOC
+Q_DECL_CONSTEXPR inline QUrl::FormattingOptions operator|(QUrl::UrlFormattingOption f1, QUrl::UrlFormattingOption f2)
+{ return QUrl::FormattingOptions(f1) | f2; }
+Q_DECL_CONSTEXPR inline QUrl::FormattingOptions operator|(QUrl::UrlFormattingOption f1, QUrl::FormattingOptions f2)
+{ return f2 | f1; }
+Q_DECL_CONSTEXPR inline QIncompatibleFlag operator|(QUrl::UrlFormattingOption f1, int f2)
+{ return QIncompatibleFlag(int(f1) | f2); }
+
+// add operators for OR'ing the two types of flags
+inline QUrl::FormattingOptions &operator|=(QUrl::FormattingOptions &i, QUrl::ComponentFormattingOptions f)
+{ i |= QUrl::UrlFormattingOption(int(f)); return i; }
+Q_DECL_CONSTEXPR inline QUrl::FormattingOptions operator|(QUrl::UrlFormattingOption i, QUrl::ComponentFormattingOption f)
+{ return i | QUrl::UrlFormattingOption(int(f)); }
+Q_DECL_CONSTEXPR inline QUrl::FormattingOptions operator|(QUrl::UrlFormattingOption i, QUrl::ComponentFormattingOptions f)
+{ return i | QUrl::UrlFormattingOption(int(f)); }
+Q_DECL_CONSTEXPR inline QUrl::FormattingOptions operator|(QUrl::ComponentFormattingOption f, QUrl::UrlFormattingOption i)
+{ return i | QUrl::UrlFormattingOption(int(f)); }
+Q_DECL_CONSTEXPR inline QUrl::FormattingOptions operator|(QUrl::ComponentFormattingOptions f, QUrl::UrlFormattingOption i)
+{ return i | QUrl::UrlFormattingOption(int(f)); }
+Q_DECL_CONSTEXPR inline QUrl::FormattingOptions operator|(QUrl::FormattingOptions i, QUrl::ComponentFormattingOptions f)
+{ return i | QUrl::UrlFormattingOption(int(f)); }
+Q_DECL_CONSTEXPR inline QUrl::FormattingOptions operator|(QUrl::ComponentFormattingOption f, QUrl::FormattingOptions i)
+{ return i | QUrl::UrlFormattingOption(int(f)); }
+Q_DECL_CONSTEXPR inline QUrl::FormattingOptions operator|(QUrl::ComponentFormattingOptions f, QUrl::FormattingOptions i)
+{ return i | QUrl::UrlFormattingOption(int(f)); }
+
+//inline QUrl::UrlFormattingOption &operator=(const QUrl::UrlFormattingOption &i, QUrl::ComponentFormattingOptions f)
+//{ i = int(f); f; }
+#endif // Q_QDOC
+
+#ifndef QT_NO_DATASTREAM
+Q_CORE_EXPORT QDataStream &operator<<(QDataStream &, const QUrl &);
+Q_CORE_EXPORT QDataStream &operator>>(QDataStream &, QUrl &);
+#endif
+
+#ifndef QT_NO_DEBUG_STREAM
+Q_CORE_EXPORT QDebug operator<<(QDebug, const QUrl &);
+#endif
+
 QT_END_NAMESPACE
 
-// #if QT_DEPRECATED_SINCE(5,0)
+#if QT_DEPRECATED_SINCE(5,0)
 # include <QtCore/qurlquery.lqt>
-// #endif
+#endif
 
 #endif // QURL_H

@@ -43,8 +43,7 @@
 #define QISENUM_H
 
 // Use of Q_IS_ENUM is deprecated since 5.8
-#define Q_IS_ENUM(x)
-// #define Q_IS_ENUM(x) std::is_enum<x>::value
+#define Q_IS_ENUM(x) std::is_enum<x>::value
 
 // shut up syncqt
 QT_BEGIN_NAMESPACE

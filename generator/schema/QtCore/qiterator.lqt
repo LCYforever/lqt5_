@@ -189,8 +189,9 @@ public:
     typedef const value_type *pointer;
     typedef const value_type &reference;
 
-    QKeyValueIterator();
-    Q_DECL_CONSTEXPR explicit QKeyValueIterator(Iterator o);
+    QKeyValueIterator() = default;
+    Q_DECL_CONSTEXPR explicit QKeyValueIterator(Iterator o) Q_DECL_NOEXCEPT_EXPR(std::is_nothrow_move_constructible<Iterator>::value)
+        : i(std::move(o)) {}
 
     std::pair<Key, T> operator*() const {
         return std::pair<Key, T>(i.key(), i.value());

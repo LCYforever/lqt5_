@@ -1,6 +1,6 @@
 /*
  * Copyright 2009 Mauro Iazzi <mauro.iazzi@gmail.com>
- * Copyright 2009 Peter Kümmel <syntheticpp@gmx.net>
+ * Copyright 2009 Peter Kï¿½mmel <syntheticpp@gmx.net>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -449,6 +449,7 @@ QString findIncludeFile(const QString& sourceName, const QString& qtdir)
 
 int main (int argc, char **argv) {
 	bool onlyPreprocess = false;
+	//bool onlyPreprocess = true;
 	bool dontResolve = false;
 	bool noCode = false;
 	bool verbose = false;
@@ -539,14 +540,15 @@ int main (int argc, char **argv) {
 	inclist << (QDir::toNativeSeparators(qtdir));
 
 	QStringList qts;
-	qts << "QtXml" << "QtNetwork" << "QtCore" << "QtGui"
-		<<"QtOpenGL" << "QtWebKit"<< "QtScript" << "QtSvg";
+	/*qts << "QtXml" << "QtNetwork" << "QtCore" << "QtGui"
+		<<"QtOpenGL" << "QtWebKit"<< "QtScript" << "QtSvg";*/
+	qts << "QtCore" << "QtGui";
 
 	Q_FOREACH(const QString& lib, qts) {
 		inclist << QDir::toNativeSeparators(qtdir + "/" + lib);
 	}
 
-	if(debug) qDebug() << "atdir: " << qtdir << "\nsourceName: " << sourceName << "\nincludes" << inclist;
+	qDebug() << "atdir: " << qtdir << "\nsourceName: " << sourceName << "\nincludes" << inclist;
 
 	Preprocessor pp;
 	pp.addIncludePaths(inclist);
@@ -554,7 +556,7 @@ int main (int argc, char **argv) {
 	pp.processFile(sourceName);
 	QByteArray contents = pp.result();
 	
-	if(debug) qDebug() << pp.macroNames();
+	qDebug() << pp.macroNames();
 	if(debug) qDebug() << contents;
 	if(debug) QTextStream(stdout) << contents;
 	

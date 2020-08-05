@@ -42,7 +42,7 @@
 
 #include <QtCore/qglobal.lqt>
 
-// #if QT_CONFIG(thread)
+#if QT_CONFIG(thread)
 
 QT_BEGIN_NAMESPACE
 
@@ -50,7 +50,7 @@ QT_BEGIN_NAMESPACE
 class Q_CORE_EXPORT QThreadStorageData
 {
 public:
-    // explicit QThreadStorageData(void (*func)(void *));
+    explicit QThreadStorageData(void (*func)(void *));
     ~QThreadStorageData();
 
     void** get() const;
@@ -60,68 +60,68 @@ public:
     int id;
 };
 
-// #if !defined(QT_MOC_CPP)
-// // MOC_SKIP_BEGIN
+#if !defined(QT_MOC_CPP)
+// MOC_SKIP_BEGIN
 
-// // pointer specialization
-// template <typename T>
-// inline
-// T *&qThreadStorage_localData(QThreadStorageData &d, T **)
-// {
-//     void **v = d.get();
-//     if (!v) v = d.set(0);
-//     return *(reinterpret_cast<T**>(v));
-// }
+// pointer specialization
+template <typename T>
+inline
+T *&qThreadStorage_localData(QThreadStorageData &d, T **)
+{
+    void **v = d.get();
+    if (!v) v = d.set(0);
+    return *(reinterpret_cast<T**>(v));
+}
 
-// template <typename T>
-// inline
-// T *qThreadStorage_localData_const(const QThreadStorageData &d, T **)
-// {
-//     void **v = d.get();
-//     return v ? *(reinterpret_cast<T**>(v)) : 0;
-// }
+template <typename T>
+inline
+T *qThreadStorage_localData_const(const QThreadStorageData &d, T **)
+{
+    void **v = d.get();
+    return v ? *(reinterpret_cast<T**>(v)) : 0;
+}
 
-// template <typename T>
-// inline
-// void qThreadStorage_setLocalData(QThreadStorageData &d, T **t)
-// { (void) d.set(*t); }
+template <typename T>
+inline
+void qThreadStorage_setLocalData(QThreadStorageData &d, T **t)
+{ (void) d.set(*t); }
 
-// template <typename T>
-// inline
-// void qThreadStorage_deleteData(void *d, T **)
-// { delete static_cast<T *>(d); }
+template <typename T>
+inline
+void qThreadStorage_deleteData(void *d, T **)
+{ delete static_cast<T *>(d); }
 
-// // value-based specialization
-// template <typename T>
-// inline
-// T &qThreadStorage_localData(QThreadStorageData &d, T *)
-// {
-//     void **v = d.get();
-//     if (!v) v = d.set(new T());
-//     return *(reinterpret_cast<T*>(*v));
-// }
+// value-based specialization
+template <typename T>
+inline
+T &qThreadStorage_localData(QThreadStorageData &d, T *)
+{
+    void **v = d.get();
+    if (!v) v = d.set(new T());
+    return *(reinterpret_cast<T*>(*v));
+}
 
-// template <typename T>
-// inline
-// T qThreadStorage_localData_const(const QThreadStorageData &d, T *)
-// {
-//     void **v = d.get();
-//     return v ? *(reinterpret_cast<T*>(*v)) : T();
-// }
+template <typename T>
+inline
+T qThreadStorage_localData_const(const QThreadStorageData &d, T *)
+{
+    void **v = d.get();
+    return v ? *(reinterpret_cast<T*>(*v)) : T();
+}
 
-// template <typename T>
-// inline
-// void qThreadStorage_setLocalData(QThreadStorageData &d, T *t)
-// { (void) d.set(new T(*t)); }
+template <typename T>
+inline
+void qThreadStorage_setLocalData(QThreadStorageData &d, T *t)
+{ (void) d.set(new T(*t)); }
 
-// template <typename T>
-// inline
-// void qThreadStorage_deleteData(void *d, T *)
-// { delete static_cast<T *>(d); }
+template <typename T>
+inline
+void qThreadStorage_deleteData(void *d, T *)
+{ delete static_cast<T *>(d); }
 
 
-// // MOC_SKIP_END
-// #endif
+// MOC_SKIP_END
+#endif
 
 template <class T>
 class QThreadStorage
@@ -152,81 +152,80 @@ public:
 
 QT_END_NAMESPACE
 
-// #else // !QT_CONFIG(thread)
+#else // !QT_CONFIG(thread)
 
-// #include <QtCore/qscopedpointer.h>
+#include <QtCore/qscopedpointer.lqt>
 
-// #include <type_traits>
 
-// template <typename T, typename U>
-// inline bool qThreadStorage_hasLocalData(const QScopedPointer<T, U> &data)
-// {
-//     return !!data;
-// }
+template <typename T, typename U>
+inline bool qThreadStorage_hasLocalData(const QScopedPointer<T, U> &data)
+{
+    return !!data;
+}
 
-// template <typename T, typename U>
-// inline bool qThreadStorage_hasLocalData(const QScopedPointer<T*, U> &data)
-// {
-//     return !!data ? *data != nullptr : false;
-// }
+template <typename T, typename U>
+inline bool qThreadStorage_hasLocalData(const QScopedPointer<T*, U> &data)
+{
+    return !!data ? *data != nullptr : false;
+}
 
-// template <typename T>
-// inline void qThreadStorage_deleteLocalData(T *t)
-// {
-//     delete t;
-// }
+template <typename T>
+inline void qThreadStorage_deleteLocalData(T *t)
+{
+    delete t;
+}
 
-// template <typename T>
-// inline void qThreadStorage_deleteLocalData(T **t)
-// {
-//     delete *t;
-//     delete t;
-// }
+template <typename T>
+inline void qThreadStorage_deleteLocalData(T **t)
+{
+    delete *t;
+    delete t;
+}
 
-// template <class T>
-// class QThreadStorage
-// {
-// private:
-//     struct ScopedPointerThreadStorageDeleter
-//     {
-//         static inline void cleanup(T *t)
-//         {
-//             if (t == nullptr)
-//                 return;
-//             qThreadStorage_deleteLocalData(t);
-//         }
-//     };
-//     QScopedPointer<T, ScopedPointerThreadStorageDeleter> data;
+template <class T>
+class QThreadStorage
+{
+private:
+    struct ScopedPointerThreadStorageDeleter
+    {
+        static inline void cleanup(T *t)
+        {
+            if (t == nullptr)
+                return;
+            qThreadStorage_deleteLocalData(t);
+        }
+    };
+    QScopedPointer<T, ScopedPointerThreadStorageDeleter> data;
 
-// public:
-//     QThreadStorage() = default;
-//     ~QThreadStorage() = default;
-//     QThreadStorage(const QThreadStorage &rhs) = delete;
-//     QThreadStorage &operator=(const QThreadStorage &rhs) = delete;
+public:
+    QThreadStorage() = default;
+    ~QThreadStorage() = default;
+    QThreadStorage(const QThreadStorage &rhs) = delete;
+    QThreadStorage &operator=(const QThreadStorage &rhs) = delete;
 
-//     inline bool hasLocalData() const
-//     {
-//         return qThreadStorage_hasLocalData(data);
-//     }
+    inline bool hasLocalData() const
+    {
+        return qThreadStorage_hasLocalData(data);
+    }
 
-//     inline T& localData()
-//     {
-//         if (!data)
-//             data.reset(new T());
-//         return *data;
-//     }
+    inline T& localData()
+    {
+        if (!data)
+            data.reset(new T());
+        return *data;
+    }
 
-//     inline T localData() const
-//     {
-//         return !!data ? *data : T();
-//     }
+    inline T localData() const
+    {
+        return !!data ? *data : T();
+    }
 
-//     inline void setLocalData(T t)
-//     {
-//         data.reset(new T(t));
-//     }
-// };
+    inline void setLocalData(T t)
+    {
+        data.reset(new T(t));
+    }
+};
 
-// #endif // QT_CONFIG(thread)
+#endif // QT_CONFIG(thread)
 
 #endif // QTHREADSTORAGE_H

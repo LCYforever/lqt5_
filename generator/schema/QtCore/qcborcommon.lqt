@@ -44,20 +44,20 @@
 #include <QtCore/qmetatype.lqt>
 #include <QtCore/qdebug.lqt>
 
-// #if 0
-// #pragma qt_class(QtCborCommon)
-// #endif
+#if 0
+#pragma qt_class(QtCborCommon)
+#endif
 
-// /* X11 headers use these values too, but as defines */
-// #if defined(False) && defined(True)
-// #  define QT_X11_DEFINES_FOUND 1
-// #  undef True
-// #  undef False
-// #endif
+/* X11 headers use these values too, but as defines */
+#if defined(False) && defined(True)
+#  define QT_X11_DEFINES_FOUND 1
+#  undef True
+#  undef False
+#endif
 
 QT_BEGIN_NAMESPACE
 
-enum class QCborSimpleType {
+enum class QCborSimpleType : quint8 {
     False = 20,
     True = 21,
     Null = 22,
@@ -91,16 +91,16 @@ enum class QCborKnownTags {
     Signature               = 55799
 };
 
-// inline bool operator==(QCborTag t, QCborKnownTags kt)   { return quint64(t) == quint64(kt); }
-// inline bool operator==(QCborKnownTags kt, QCborTag t)   { return quint64(t) == quint64(kt); }
-// inline bool operator!=(QCborTag t, QCborKnownTags kt)   { return quint64(t) != quint64(kt); }
-// inline bool operator!=(QCborKnownTags kt, QCborTag t)   { return quint64(t) != quint64(kt); }
+inline bool operator==(QCborTag t, QCborKnownTags kt)   { return quint64(t) == quint64(kt); }
+inline bool operator==(QCborKnownTags kt, QCborTag t)   { return quint64(t) == quint64(kt); }
+inline bool operator!=(QCborTag t, QCborKnownTags kt)   { return quint64(t) != quint64(kt); }
+inline bool operator!=(QCborKnownTags kt, QCborTag t)   { return quint64(t) != quint64(kt); }
 
 struct Q_CORE_EXPORT QCborError
 {
     Q_GADGET
 public:
-    enum Code {
+    enum Code : int {
         UnknownError = 1,
         AdvancePastEnd = 3,
         InputOutputError = 4,
@@ -133,15 +133,30 @@ Q_CORE_EXPORT QDebug operator<<(QDebug, QCborKnownTags tg);
 Q_CORE_EXPORT QDebug operator<<(QDebug, QCborTag tg);
 #endif
 
+#if !defined(QT_NO_DEBUG_STREAM)
+QDataStream &operator<<(QDataStream &ds, QCborSimpleType st);
+QDataStream &operator>>(QDataStream &ds, QCborSimpleType &st);
+#endif
+
+inline uint qHash(QCborSimpleType tag, uint seed = 0)
+{
+    return qHash(quint8(tag), seed);
+}
+
+inline uint qHash(QCborTag tag, uint seed = 0)
+{
+    return qHash(quint64(tag), seed);
+}
+
 QT_END_NAMESPACE
 
-// Q_DECLARE_METATYPE(QCborTag)
+Q_DECLARE_METATYPE(QCborTag)
 
-// // To avoid changing namespace we need to reinstate defines, even though our .cpp
-// // will then have to remove them again.
-// #if defined(QT_X11_DEFINES_FOUND)
-// #  define True  1
-// #  define False 0
-// #endif
+// To avoid changing namespace we need to reinstate defines, even though our .cpp
+// will then have to remove them again.
+#if defined(QT_X11_DEFINES_FOUND)
+#  define True  1
+#  define False 0
+#endif
 
 #endif // QCBORSTREAM_H

@@ -51,18 +51,18 @@ class QBufferPrivate;
 
 class Q_CORE_EXPORT QBuffer : public QIODevice
 {
-// #ifndef QT_NO_QOBJECT
-    LQT_OBJECT Q_OBJECT
-// #endif
+#ifndef QT_NO_QOBJECT
+    LQT_OBJECT O_OBJECT
+#endif
 
 public:
-// #ifndef QT_NO_QOBJECT
+#ifndef QT_NO_QOBJECT
      explicit QBuffer(QObject *parent = nullptr);
      QBuffer(QByteArray *buf, QObject *parent = nullptr);
-// #else
-//      QBuffer();
-//      explicit QBuffer(QByteArray *buf);
-// #endif
+#else
+     QBuffer();
+     explicit QBuffer(QByteArray *buf);
+#endif
     ~QBuffer();
 
     QByteArray &buffer();
@@ -83,10 +83,10 @@ public:
     bool canReadLine() const override;
 
 protected:
-// #ifndef QT_NO_QOBJECT
+#ifndef QT_NO_QOBJECT
     void connectNotify(const QMetaMethod &) override;
     void disconnectNotify(const QMetaMethod &) override;
-// #endif
+#endif
     qint64 readData(char *data, qint64 maxlen) override;
     qint64 writeData(const char *data, qint64 len) override;
 

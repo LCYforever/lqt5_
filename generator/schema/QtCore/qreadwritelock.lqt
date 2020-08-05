@@ -45,7 +45,7 @@
 QT_BEGIN_NAMESPACE
 
 
-// #if QT_CONFIG(thread)
+#if QT_CONFIG(thread)
 
 class QReadWriteLockPrivate;
 
@@ -76,10 +76,10 @@ private:
     friend class QWaitCondition;
 };
 
-// #if defined(Q_CC_MSVC)
-// #pragma warning( push )
-// #pragma warning( disable : 4312 ) // ignoring the warning from /Wp64
-// #endif
+#if defined(Q_CC_MSVC)
+#pragma warning( push )
+#pragma warning( disable : 4312 ) // ignoring the warning from /Wp64
+#endif
 
 class Q_CORE_EXPORT QReadLocker
 {
@@ -117,13 +117,13 @@ private:
     quintptr q_val;
 };
 
-// inline QReadLocker::QReadLocker(QReadWriteLock *areadWriteLock)
-//     : q_val(reinterpret_cast<quintptr>(areadWriteLock))
-// {
-//     Q_ASSERT_X((q_val & quintptr(1u)) == quintptr(0),
-//                "QReadLocker", "QReadWriteLock pointer is misaligned");
-//     relock();
-// }
+inline QReadLocker::QReadLocker(QReadWriteLock *areadWriteLock)
+    : q_val(reinterpret_cast<quintptr>(areadWriteLock))
+{
+    Q_ASSERT_X((q_val & quintptr(1u)) == quintptr(0),
+               "QReadLocker", "QReadWriteLock pointer is misaligned");
+    relock();
+}
 
 class Q_CORE_EXPORT QWriteLocker
 {
@@ -162,70 +162,70 @@ private:
     quintptr q_val;
 };
 
-// inline QWriteLocker::QWriteLocker(QReadWriteLock *areadWriteLock)
-//     : q_val(reinterpret_cast<quintptr>(areadWriteLock))
-// {
-//     Q_ASSERT_X((q_val & quintptr(1u)) == quintptr(0),
-//                "QWriteLocker", "QReadWriteLock pointer is misaligned");
-//     relock();
-// }
+inline QWriteLocker::QWriteLocker(QReadWriteLock *areadWriteLock)
+    : q_val(reinterpret_cast<quintptr>(areadWriteLock))
+{
+    Q_ASSERT_X((q_val & quintptr(1u)) == quintptr(0),
+               "QWriteLocker", "QReadWriteLock pointer is misaligned");
+    relock();
+}
 
-// #if defined(Q_CC_MSVC)
-// #pragma warning( pop )
-// #endif
+#if defined(Q_CC_MSVC)
+#pragma warning( pop )
+#endif
 
-// #else // QT_CONFIG(thread)
+#else // QT_CONFIG(thread)
 
-// class Q_CORE_EXPORT QReadWriteLock
-// {
-// public:
-//     enum RecursionMode { NonRecursive, Recursive };
-//     inline explicit QReadWriteLock(RecursionMode = NonRecursive) Q_DECL_NOTHROW { }
-//     inline ~QReadWriteLock() { }
+class Q_CORE_EXPORT QReadWriteLock
+{
+public:
+    enum RecursionMode { NonRecursive, Recursive };
+    inline explicit QReadWriteLock(RecursionMode = NonRecursive) Q_DECL_NOTHROW { }
+    inline ~QReadWriteLock() { }
 
-//     static inline void lockForRead() Q_DECL_NOTHROW { }
-//     static inline bool tryLockForRead() Q_DECL_NOTHROW { return true; }
-//     static inline bool tryLockForRead(int timeout) Q_DECL_NOTHROW { Q_UNUSED(timeout); return true; }
+    static inline void lockForRead() Q_DECL_NOTHROW { }
+    static inline bool tryLockForRead() Q_DECL_NOTHROW { return true; }
+    static inline bool tryLockForRead(int timeout) Q_DECL_NOTHROW { Q_UNUSED(timeout); return true; }
 
-//     static inline void lockForWrite() Q_DECL_NOTHROW { }
-//     static inline bool tryLockForWrite() Q_DECL_NOTHROW { return true; }
-//     static inline bool tryLockForWrite(int timeout) Q_DECL_NOTHROW { Q_UNUSED(timeout); return true; }
+    static inline void lockForWrite() Q_DECL_NOTHROW { }
+    static inline bool tryLockForWrite() Q_DECL_NOTHROW { return true; }
+    static inline bool tryLockForWrite(int timeout) Q_DECL_NOTHROW { Q_UNUSED(timeout); return true; }
 
-//     static inline void unlock() Q_DECL_NOTHROW { }
+    static inline void unlock() Q_DECL_NOTHROW { }
 
-// private:
-//     Q_DISABLE_COPY(QReadWriteLock)
-// };
+private:
+    Q_DISABLE_COPY(QReadWriteLock)
+};
 
-// class Q_CORE_EXPORT QReadLocker
-// {
-// public:
-//     inline QReadLocker(QReadWriteLock *) Q_DECL_NOTHROW { }
-//     inline ~QReadLocker() Q_DECL_NOTHROW { }
+class Q_CORE_EXPORT QReadLocker
+{
+public:
+    inline QReadLocker(QReadWriteLock *) Q_DECL_NOTHROW { }
+    inline ~QReadLocker() Q_DECL_NOTHROW { }
 
-//     static inline void unlock() Q_DECL_NOTHROW { }
-//     static inline void relock() Q_DECL_NOTHROW { }
-//     static inline QReadWriteLock *readWriteLock() Q_DECL_NOTHROW { return nullptr; }
+    static inline void unlock() Q_DECL_NOTHROW { }
+    static inline void relock() Q_DECL_NOTHROW { }
+    static inline QReadWriteLock *readWriteLock() Q_DECL_NOTHROW { return nullptr; }
 
-// private:
-//     Q_DISABLE_COPY(QReadLocker)
-// };
+private:
+    Q_DISABLE_COPY(QReadLocker)
+};
 
-// class Q_CORE_EXPORT QWriteLocker
-// {
-// public:
-//     inline explicit QWriteLocker(QReadWriteLock *) Q_DECL_NOTHROW { }
-//     inline ~QWriteLocker() Q_DECL_NOTHROW { }
+class Q_CORE_EXPORT QWriteLocker
+{
+public:
+    inline explicit QWriteLocker(QReadWriteLock *) Q_DECL_NOTHROW { }
+    inline ~QWriteLocker() Q_DECL_NOTHROW { }
 
-//     static inline void unlock() Q_DECL_NOTHROW { }
-//     static inline void relock() Q_DECL_NOTHROW { }
-//     static inline QReadWriteLock *readWriteLock() Q_DECL_NOTHROW { return nullptr; }
+    static inline void unlock() Q_DECL_NOTHROW { }
+    static inline void relock() Q_DECL_NOTHROW { }
+    static inline QReadWriteLock *readWriteLock() Q_DECL_NOTHROW { return nullptr; }
 
-// private:
-//     Q_DISABLE_COPY(QWriteLocker)
-// };
+private:
+    Q_DISABLE_COPY(QWriteLocker)
+};
 
-// #endif // QT_CONFIG(thread)
+#endif // QT_CONFIG(thread)
 
 QT_END_NAMESPACE
 

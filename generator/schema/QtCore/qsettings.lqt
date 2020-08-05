@@ -45,22 +45,29 @@
 #include <QtCore/qstring.lqt>
 #include <QtCore/qscopedpointer.lqt>
 
+QT_REQUIRE_CONFIG(settings);
+
+
 QT_BEGIN_NAMESPACE
+
+#ifdef Status // we seem to pick up a macro Status --> int somewhere
+#undef Status
+#endif
 
 class QIODevice;
 class QSettingsPrivate;
 
-// #ifndef QT_NO_QOBJECT
+#ifndef QT_NO_QOBJECT
 class Q_CORE_EXPORT QSettings : public QObject
-// #else
-// class Q_CORE_EXPORT QSettings
-// #endif
+#else
+class Q_CORE_EXPORT QSettings
+#endif
 {
-// #ifndef QT_NO_QOBJECT
-    LQT_OBJECT Q_OBJECT
-// #else
-//     QScopedPointer<QSettingsPrivate> d_ptr;
-// #endif
+#ifndef QT_NO_QOBJECT
+    LQT_OBJECT O_OBJECT
+#else
+    QScopedPointer<QSettingsPrivate> d_ptr;
+#endif
     Q_DECLARE_PRIVATE(QSettings)
 
 public:
@@ -69,18 +76,18 @@ public:
         AccessError,
         FormatError
     };
-// #ifndef QT_NO_QOBJECT
+#ifndef QT_NO_QOBJECT
     Q_ENUM(Status)
-// #endif
+#endif
 
     enum Format {
         NativeFormat,
         IniFormat,
 
-// #if defined(Q_OS_WIN) || defined(Q_CLANG_QDOC)
-//         Registry32Format,
-//         Registry64Format,
-// #endif
+#if defined(Q_OS_WIN) || defined(Q_CLANG_QDOC)
+        Registry32Format,
+        Registry64Format,
+#endif
 
         InvalidFormat = 16,
         CustomFormat1,
@@ -100,19 +107,19 @@ public:
         CustomFormat15,
         CustomFormat16
     };
-// #ifndef QT_NO_QOBJECT
+#ifndef QT_NO_QOBJECT
     Q_ENUM(Format)
-// #endif
+#endif
 
     enum Scope {
         UserScope,
         SystemScope
     };
-// #ifndef QT_NO_QOBJECT
+#ifndef QT_NO_QOBJECT
     Q_ENUM(Scope)
-// #endif
+#endif
 
-// #ifndef QT_NO_QOBJECT
+#ifndef QT_NO_QOBJECT
     explicit QSettings(const QString &organization,
                        const QString &application = QString(), QObject *parent = nullptr);
     QSettings(Scope scope, const QString &organization,
@@ -121,15 +128,19 @@ public:
               const QString &application = QString(), QObject *parent = nullptr);
     QSettings(const QString &fileName, Format format, QObject *parent = nullptr);
     explicit QSettings(QObject *parent = nullptr);
-// #else
-//     explicit QSettings(const QString &organization,
-//                        const QString &application = QString());
-//     QSettings(Scope scope, const QString &organization,
-//               const QString &application = QString());
-//     QSettings(Format format, Scope scope, const QString &organization,
-//               const QString &application = QString());
-//     QSettings(const QString &fileName, Format format);
-// #endif
+    explicit QSettings(Scope scope, QObject *parent = nullptr);
+#else
+    explicit QSettings(const QString &organization,
+                       const QString &application = QString());
+    QSettings(Scope scope, const QString &organization,
+              const QString &application = QString());
+    QSettings(Format format, Scope scope, const QString &organization,
+              const QString &application = QString());
+    QSettings(const QString &fileName, Format format);
+#  ifndef QT_BUILD_QMAKE
+    explicit QSettings(Scope scope = UserScope);
+#  endif
+#endif
     ~QSettings();
 
     void clear();
@@ -167,16 +178,20 @@ public:
     QString organizationName() const;
     QString applicationName() const;
 
-// #ifndef QT_NO_TEXTCODEC
+#if QT_CONFIG(textcodec)
     void setIniCodec(QTextCodec *codec);
     void setIniCodec(const char *codecName);
     QTextCodec *iniCodec() const;
-// #endif
+#endif
 
     static void setDefaultFormat(Format format);
     static Format defaultFormat();
-    static void setSystemIniPath(const QString &dir); // ### Qt 6: remove (use setPath() instead)
-    static void setUserIniPath(const QString &dir);   // ### Qt 6: remove (use setPath() instead)
+#if QT_DEPRECATED_SINCE(5, 13)
+    QT_DEPRECATED_X("Use QSettings::setPath() instead")
+    static void setSystemIniPath(const QString &dir);
+    QT_DEPRECATED_X("Use QSettings::setPath() instead")
+    static void setUserIniPath(const QString &dir);
+#endif
     static void setPath(Format format, Scope scope, const QString &path);
 
     typedef QMap<QString, QVariant> SettingsMap;
@@ -187,16 +202,14 @@ public:
                                  Qt::CaseSensitivity caseSensitivity = Qt::CaseSensitive);
 
 protected:
-// #ifndef QT_NO_QOBJECT
+#ifndef QT_NO_QOBJECT
     bool event(QEvent *event) override;
-// #endif
+#endif
 
 private:
     Q_DISABLE_COPY(QSettings)
 };
 
 QT_END_NAMESPACE
-
-// #endif // QT_NO_SETTINGS
 
 #endif // QSETTINGS_H

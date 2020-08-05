@@ -73,9 +73,9 @@ public:
     QRegExp(const QRegExp &rx);
     ~QRegExp();
     QRegExp &operator=(const QRegExp &rx);
-// #ifdef Q_COMPILER_RVALUE_REFS
-//     QRegExp &operator=(QRegExp &&other) Q_DECL_NOTHROW { swap(other); return *this; }
-// #endif
+#ifdef Q_COMPILER_RVALUE_REFS
+    QRegExp &operator=(QRegExp &&other) Q_DECL_NOTHROW { swap(other); return *this; }
+#endif
     void swap(QRegExp &other) Q_DECL_NOTHROW { qSwap(priv, other.priv); }
 
     bool operator==(const QRegExp &rx) const;
@@ -98,7 +98,7 @@ public:
     int indexIn(const QString &str, int offset = 0, CaretMode caretMode = CaretAtZero) const;
     int lastIndexIn(const QString &str, int offset = -1, CaretMode caretMode = CaretAtZero) const;
     int matchedLength() const;
-// #ifndef QT_NO_REGEXP_CAPTURE
+#ifndef QT_NO_REGEXP_CAPTURE
     int captureCount() const;
     QStringList capturedTexts() const;
     QStringList capturedTexts();
@@ -108,14 +108,14 @@ public:
     int pos(int nth = 0);
     QString errorString() const;
     QString errorString();
-// #endif
+#endif
 
     static QString escape(const QString &str);
 
     friend Q_CORE_EXPORT uint qHash(const QRegExp &key, uint seed) Q_DECL_NOTHROW;
 
-// private:
-//     QRegExpPrivate *priv;
+private:
+    QRegExpPrivate *priv;
 };
 
 Q_DECLARE_TYPEINFO(QRegExp, Q_MOVABLE_TYPE);

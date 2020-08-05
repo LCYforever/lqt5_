@@ -65,11 +65,11 @@ public:
     explicit QFuture(QFutureInterface<T> *p) // internal
         : d(*p)
     { }
-// #if defined(Q_CLANG_QDOC)
-//     ~QFuture() { }
-//     QFuture(const QFuture<T> &) { }
-//     QFuture<T> & operator=(const QFuture<T> &) { }
-// #endif
+#if defined(Q_CLANG_QDOC)
+    ~QFuture() { }
+    QFuture(const QFuture<T> &) { }
+    QFuture<T> & operator=(const QFuture<T> &) { }
+#endif
 
     bool operator==(const QFuture &other) const { return (d == other.d); }
     bool operator!=(const QFuture &other) const { return (d != other.d); }
@@ -156,25 +156,25 @@ public: // Warning: the d pointer is not documented and is considered private.
     mutable QFutureInterface<T> d;
 };
 
-// template <typename T>
-// inline T QFuture<T>::result() const
-// {
-//     d.waitForResult(0);
-//     return d.resultReference(0);
-// }
+template <typename T>
+inline T QFuture<T>::result() const
+{
+    d.waitForResult(0);
+    return d.resultReference(0);
+}
 
-// template <typename T>
-// inline T QFuture<T>::resultAt(int index) const
-// {
-//     d.waitForResult(index);
-//     return d.resultReference(index);
-// }
+template <typename T>
+inline T QFuture<T>::resultAt(int index) const
+{
+    d.waitForResult(index);
+    return d.resultReference(index);
+}
 
-// template <typename T>
-// inline QFuture<T> QFutureInterface<T>::future()
-// {
-//     return QFuture<T>(this);
-// }
+template <typename T>
+inline QFuture<T> QFutureInterface<T>::future()
+{
+    return QFuture<T>(this);
+}
 
 Q_DECLARE_SEQUENTIAL_ITERATOR(Future)
 
@@ -192,7 +192,7 @@ public:
     bool operator==(const QFuture &other) const { return (d == other.d); }
     bool operator!=(const QFuture &other) const { return (d != other.d); }
 
-// #if !defined(Q_CC_XLC)
+#if !defined(Q_CC_XLC)
     template <typename T>
     QFuture(const QFuture<T> &other)
         : d(other.d)
@@ -204,7 +204,7 @@ public:
         d = other.d;
         return *this;
     }
-// #endif
+#endif
 
     void cancel() { d.cancel(); }
     bool isCanceled() const { return d.isCanceled(); }
@@ -226,25 +226,25 @@ public:
     QString progressText() const { return d.progressText(); }
     void waitForFinished() { d.waitForFinished(); }
 
-// private:
-//     friend class QFutureWatcher<void>;
+private:
+    friend class QFutureWatcher<void>;
 
-// #ifdef QFUTURE_TEST
-// public:
-// #endif
-//     mutable QFutureInterfaceBase d;
+#ifdef QFUTURE_TEST
+public:
+#endif
+    mutable QFutureInterfaceBase d;
 };
 
-// inline QFuture<void> QFutureInterface<void>::future()
-// {
-//     return QFuture<void>(this);
-// }
+inline QFuture<void> QFutureInterface<void>::future()
+{
+    return QFuture<void>(this);
+}
 
-// template <typename T>
-// QFuture<void> qToVoidFuture(const QFuture<T> &future)
-// {
-//     return QFuture<void>(future.d);
-// }
+template <typename T>
+QFuture<void> qToVoidFuture(const QFuture<T> &future)
+{
+    return QFuture<void>(future.d);
+}
 
 QT_END_NAMESPACE
 

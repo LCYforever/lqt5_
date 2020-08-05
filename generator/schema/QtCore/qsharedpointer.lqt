@@ -44,6 +44,10 @@
 #include <QtCore/qatomic.lqt>
 #include <QtCore/qshareddata.lqt>
 
+#ifndef Q_QDOC
+# include <QtCore/qsharedpointer_impl.lqt>
+#else
+
 QT_BEGIN_NAMESPACE
 
 
@@ -93,8 +97,8 @@ public:
     template <class X> QSharedPointer<X> constCast() const;
     template <class X> QSharedPointer<X> objectCast() const;
 
-    static inline QSharedPointer<T> create();
-    static inline QSharedPointer<T> create(...);
+    template <typename... Args>
+    static inline QSharedPointer<T> create(Args &&... args);
 };
 
 template <class T>
@@ -168,6 +172,6 @@ template <class X, class T> QWeakPointer<X> qWeakPointerCast(const QWeakPointer<
 
 QT_END_NAMESPACE
 
-// #endif // Q_QDOC
+#endif // Q_QDOC
 
 #endif // QSHAREDPOINTER_H

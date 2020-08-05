@@ -58,11 +58,11 @@ public:
     explicit QBitArray(int size, bool val = false);
     QBitArray(const QBitArray &other) : d(other.d) {}
     inline QBitArray &operator=(const QBitArray &other) { d = other.d; return *this; }
-// #ifdef Q_COMPILER_RVALUE_REFS
-//     inline QBitArray(QBitArray &&other) Q_DECL_NOTHROW : d(std::move(other.d)) {}
-//     inline QBitArray &operator=(QBitArray &&other) Q_DECL_NOTHROW
-//     { qSwap(d, other.d); return *this; }
-// #endif
+#ifdef Q_COMPILER_RVALUE_REFS
+    inline QBitArray(QBitArray &&other) Q_DECL_NOTHROW : d(std::move(other.d)) {}
+    inline QBitArray &operator=(QBitArray &&other) Q_DECL_NOTHROW
+    { qSwap(d, other.d); return *this; }
+#endif
 
     inline void swap(QBitArray &other) Q_DECL_NOTHROW { qSwap(d, other.d); }
 
@@ -111,6 +111,57 @@ public:
     typedef QByteArray::DataPtr DataPtr;
     inline DataPtr &data_ptr() { return d.data_ptr(); }
 };
+
+inline bool QBitArray::fill(bool aval, int asize)
+{ *this = QBitArray((asize < 0 ? this->size() : asize), aval); return true; }
+
+Q_CORE_EXPORT QBitArray operator&(const QBitArray &, const QBitArray &);
+Q_CORE_EXPORT QBitArray operator|(const QBitArray &, const QBitArray &);
+Q_CORE_EXPORT QBitArray operator^(const QBitArray &, const QBitArray &);
+
+inline bool QBitArray::testBit(int i) const
+{ Q_ASSERT(uint(i) < uint(size()));
+ return (*(reinterpret_cast<const uchar*>(d.constData())+1+(i>>3)) & (1 << (i & 7))) != 0; }
+
+inline void QBitArray::setBit(int i)
+{ Q_ASSERT(uint(i) < uint(size()));
+ *(reinterpret_cast<uchar*>(d.data())+1+(i>>3)) |= uchar(1 << (i & 7)); }
+
+inline void QBitArray::clearBit(int i)
+{ Q_ASSERT(uint(i) < uint(size()));
+ *(reinterpret_cast<uchar*>(d.data())+1+(i>>3)) &= ~uchar(1 << (i & 7)); }
+
+inline void QBitArray::setBit(int i, bool val)
+{ if (val) setBit(i); else clearBit(i); }
+
+inline bool QBitArray::toggleBit(int i)
+{ Q_ASSERT(uint(i) < uint(size()));
+ uchar b = uchar(1<<(i&7)); uchar* p = reinterpret_cast<uchar*>(d.data())+1+(i>>3);
+ uchar c = uchar(*p&b); *p^=b; return c!=0; }
+
+inline bool QBitArray::operator[](int i) const { return testBit(i); }
+inline bool QBitArray::operator[](uint i) const { return testBit(i); }
+inline bool QBitArray::at(int i) const { return testBit(i); }
+
+class Q_CORE_EXPORT QBitRef
+{
+private:
+    QBitArray& a;
+    int i;
+    inline QBitRef(QBitArray& array, int idx) : a(array), i(idx) {}
+    friend class QBitArray;
+public:
+    inline operator bool() const { return a.testBit(i); }
+    inline bool operator!() const { return !a.testBit(i); }
+    QBitRef& operator=(const QBitRef& val) { a.setBit(i, val); return *this; }
+    QBitRef& operator=(bool val) { a.setBit(i, val); return *this; }
+};
+
+inline QBitRef QBitArray::operator[](int i)
+{ Q_ASSERT(i >= 0); return QBitRef(*this, i); }
+inline QBitRef QBitArray::operator[](uint i)
+{ return QBitRef(*this, i); }
+
 
 #ifndef QT_NO_DATASTREAM
 Q_CORE_EXPORT QDataStream &operator<<(QDataStream &, const QBitArray &);

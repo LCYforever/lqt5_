@@ -77,9 +77,9 @@ public:
     void reportStarted();
     void reportFinished();
     void reportCanceled();
-// #ifndef QT_NO_EXCEPTIONS
+#ifndef QT_NO_EXCEPTIONS
     void reportException(const QException &e);
-// #endif
+#endif
     void reportResultsReady(int beginIndex, int endIndex);
 
     void setRunnable(QRunnable *runnable);
@@ -131,10 +131,10 @@ protected:
     bool derefT() const;
 public:
 
-// #ifndef QFUTURE_TEST
-// private:
-// #endif
-//     QFutureInterfaceBasePrivate *d;
+#ifndef QFUTURE_TEST
+private:
+#endif
+    QFutureInterfaceBasePrivate *d;
 
 private:
     friend class QFutureWatcherBase;
@@ -185,94 +185,94 @@ public:
     inline QList<T> results();
 };
 
-// template <typename T>
-// inline void QFutureInterface<T>::reportResult(const T *result, int index)
-// {
-//     QMutexLocker locker(mutex());
-//     if (this->queryState(Canceled) || this->queryState(Finished)) {
-//         return;
-//     }
+template <typename T>
+inline void QFutureInterface<T>::reportResult(const T *result, int index)
+{
+    QMutexLocker locker(mutex());
+    if (this->queryState(Canceled) || this->queryState(Finished)) {
+        return;
+    }
 
-//     QtPrivate::ResultStoreBase &store = resultStoreBase();
+    QtPrivate::ResultStoreBase &store = resultStoreBase();
 
-//     if (store.filterMode()) {
-//         const int resultCountBefore = store.count();
-//         store.addResult<T>(index, result);
-//         this->reportResultsReady(resultCountBefore, resultCountBefore + store.count());
-//     } else {
-//         const int insertIndex = store.addResult<T>(index, result);
-//         this->reportResultsReady(insertIndex, insertIndex + 1);
-//     }
-// }
+    if (store.filterMode()) {
+        const int resultCountBefore = store.count();
+        store.addResult<T>(index, result);
+        this->reportResultsReady(resultCountBefore, resultCountBefore + store.count());
+    } else {
+        const int insertIndex = store.addResult<T>(index, result);
+        this->reportResultsReady(insertIndex, insertIndex + 1);
+    }
+}
 
-// template <typename T>
-// inline void QFutureInterface<T>::reportResult(const T &result, int index)
-// {
-//     reportResult(&result, index);
-// }
+template <typename T>
+inline void QFutureInterface<T>::reportResult(const T &result, int index)
+{
+    reportResult(&result, index);
+}
 
-// template <typename T>
-// inline void QFutureInterface<T>::reportResults(const QVector<T> &_results, int beginIndex, int count)
-// {
-//     QMutexLocker locker(mutex());
-//     if (this->queryState(Canceled) || this->queryState(Finished)) {
-//         return;
-//     }
+template <typename T>
+inline void QFutureInterface<T>::reportResults(const QVector<T> &_results, int beginIndex, int count)
+{
+    QMutexLocker locker(mutex());
+    if (this->queryState(Canceled) || this->queryState(Finished)) {
+        return;
+    }
 
-//     auto &store = resultStoreBase();
+    auto &store = resultStoreBase();
 
-//     if (store.filterMode()) {
-//         const int resultCountBefore = store.count();
-//         store.addResults(beginIndex, &_results, count);
-//         this->reportResultsReady(resultCountBefore, store.count());
-//     } else {
-//         const int insertIndex = store.addResults(beginIndex, &_results, count);
-//         this->reportResultsReady(insertIndex, insertIndex + _results.count());
-//     }
-// }
+    if (store.filterMode()) {
+        const int resultCountBefore = store.count();
+        store.addResults(beginIndex, &_results, count);
+        this->reportResultsReady(resultCountBefore, store.count());
+    } else {
+        const int insertIndex = store.addResults(beginIndex, &_results, count);
+        this->reportResultsReady(insertIndex, insertIndex + _results.count());
+    }
+}
 
-// template <typename T>
-// inline void QFutureInterface<T>::reportFinished(const T *result)
-// {
-//     if (result)
-//         reportResult(result);
-//     QFutureInterfaceBase::reportFinished();
-// }
+template <typename T>
+inline void QFutureInterface<T>::reportFinished(const T *result)
+{
+    if (result)
+        reportResult(result);
+    QFutureInterfaceBase::reportFinished();
+}
 
-// template <typename T>
-// inline const T &QFutureInterface<T>::resultReference(int index) const
-// {
-//     QMutexLocker lock(mutex());
-//     return resultStoreBase().resultAt(index).template value<T>();
-// }
+template <typename T>
+inline const T &QFutureInterface<T>::resultReference(int index) const
+{
+    QMutexLocker lock(mutex());
+    return resultStoreBase().resultAt(index).template value<T>();
+}
 
-// template <typename T>
-// inline const T *QFutureInterface<T>::resultPointer(int index) const
-// {
-//     QMutexLocker lock(mutex());
-//     return resultStoreBase().resultAt(index).template pointer<T>();
-// }
+template <typename T>
+inline const T *QFutureInterface<T>::resultPointer(int index) const
+{
+    QMutexLocker lock(mutex());
+    return resultStoreBase().resultAt(index).template pointer<T>();
+}
 
-// template <typename T>
-// inline QList<T> QFutureInterface<T>::results()
-// {
-//     if (this->isCanceled()) {
-//         exceptionStore().throwPossibleException();
-//         return QList<T>();
-//     }
-//     QFutureInterfaceBase::waitForResult(-1);
+template <typename T>
+inline QList<T> QFutureInterface<T>::results()
+{
+    if (this->isCanceled()) {
+        exceptionStore().throwPossibleException();
+        return QList<T>();
+    }
+    QFutureInterfaceBase::waitForResult(-1);
 
-//     QList<T> res;
-//     QMutexLocker lock(mutex());
+    QList<T> res;
+    QMutexLocker lock(mutex());
 
-//     QtPrivate::ResultIteratorBase it = resultStoreBase().begin();
-//     while (it != resultStoreBase().end()) {
-//         res.append(it.value<T>());
-//         ++it;
-//     }
+    QtPrivate::ResultIteratorBase it = resultStoreBase().begin();
+    while (it != resultStoreBase().end()) {
+        res.append(it.value<T>());
+        ++it;
+    }
 
-//     return res;
-// }
+    return res;
+}
 
 template <>
 class QFutureInterface<void> : public QFutureInterfaceBase

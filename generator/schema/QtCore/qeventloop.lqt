@@ -45,11 +45,11 @@
 QT_BEGIN_NAMESPACE
 
 
-// class QEventLoopPrivate;
+class QEventLoopPrivate;
 
 class Q_CORE_EXPORT QEventLoop : public QObject
 {
-    LQT_OBJECT Q_OBJECT
+    LQT_OBJECT O_OBJECT
     Q_DECLARE_PRIVATE(QEventLoop)
 
 public:

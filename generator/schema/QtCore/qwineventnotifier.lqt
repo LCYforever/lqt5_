@@ -42,39 +42,39 @@
 
 #include "QtCore/qobject.lqt"
 
-// #if defined(Q_OS_WIN) || defined(Q_CLANG_QDOC)
+#if defined(Q_OS_WIN) || defined(Q_CLANG_QDOC)
 
-// QT_BEGIN_NAMESPACE
+QT_BEGIN_NAMESPACE
 
-// class QWinEventNotifierPrivate;
-// class Q_CORE_EXPORT QWinEventNotifier : public QObject
-// {
-//    LQT_OBJECT Q_OBJECT
-//     Q_DECLARE_PRIVATE(QWinEventNotifier)
-//     typedef Qt::HANDLE HANDLE;
+class QWinEventNotifierPrivate;
+class Q_CORE_EXPORT QWinEventNotifier : public QObject
+{
+    LQT_OBJECT O_OBJECT
+    Q_DECLARE_PRIVATE(QWinEventNotifier)
+    typedef Qt::HANDLE HANDLE;
 
-// public:
-//     explicit QWinEventNotifier(QObject *parent = nullptr);
-//     explicit QWinEventNotifier(HANDLE hEvent, QObject *parent = nullptr);
-//     ~QWinEventNotifier();
+public:
+    explicit QWinEventNotifier(QObject *parent = nullptr);
+    explicit QWinEventNotifier(HANDLE hEvent, QObject *parent = nullptr);
+    ~QWinEventNotifier();
 
-//     void setHandle(HANDLE hEvent);
-//     HANDLE handle() const;
+    void setHandle(HANDLE hEvent);
+    HANDLE handle() const;
 
-//     bool isEnabled() const;
+    bool isEnabled() const;
 
-// public Q_SLOTS:
-//     void setEnabled(bool enable);
+public Q_SLOTS:
+    void setEnabled(bool enable);
 
-// Q_SIGNALS:
-//     void activated(HANDLE hEvent, QPrivateSignal);
+Q_SIGNALS:
+    void activated(HANDLE hEvent, QPrivateSignal);
 
-// protected:
-//     bool event(QEvent *e) override;
-// };
+protected:
+    bool event(QEvent *e) override;
+};
 
-// QT_END_NAMESPACE
+QT_END_NAMESPACE
 
-// #endif // Q_OS_WIN
+#endif // Q_OS_WIN
 
 #endif // QWINEVENTNOTIFIER_H

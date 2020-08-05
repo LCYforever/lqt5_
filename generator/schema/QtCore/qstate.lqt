@@ -54,7 +54,7 @@ class QSignalTransition;
 class QStatePrivate;
 class Q_CORE_EXPORT QState : public QAbstractState
 {
-    LQT_OBJECT Q_OBJECT
+    LQT_OBJECT O_OBJECT
     Q_PROPERTY(QAbstractState* initialState READ initialState WRITE setInitialState NOTIFY initialStateChanged)
     Q_PROPERTY(QAbstractState* errorState READ errorState WRITE setErrorState NOTIFY errorStateChanged)
     Q_PROPERTY(ChildMode childMode READ childMode WRITE setChildMode NOTIFY childModeChanged)
@@ -80,11 +80,11 @@ public:
 
     void addTransition(QAbstractTransition *transition);
     QSignalTransition *addTransition(const QObject *sender, const char *signal, QAbstractState *target);
-// #ifdef Q_QDOC
-//     template<typename PointerToMemberFunction>
-//     QSignalTransition *addTransition(const QObject *sender, PointerToMemberFunction signal,
-//                        QAbstractState *target);
-// #else
+#ifdef Q_QDOC
+    template<typename PointerToMemberFunction>
+    QSignalTransition *addTransition(const QObject *sender, PointerToMemberFunction signal,
+                       QAbstractState *target);
+#else
     template <typename Func>
     QSignalTransition *addTransition(const typename QtPrivate::FunctionPointer<Func>::Object *obj,
                       Func signal, QAbstractState *target)
@@ -92,7 +92,7 @@ public:
         const QMetaMethod signalMetaMethod = QMetaMethod::fromSignal(signal);
         return addTransition(obj, signalMetaMethod.methodSignature().constData(), target);
     }
-// #endif // Q_QDOC
+#endif // Q_QDOC
     QAbstractTransition *addTransition(QAbstractState *target);
     void removeTransition(QAbstractTransition *transition);
     QList<QAbstractTransition*> transitions() const;
@@ -103,10 +103,10 @@ public:
     ChildMode childMode() const;
     void setChildMode(ChildMode mode);
 
-// #ifndef QT_NO_PROPERTIES
+#ifndef QT_NO_PROPERTIES
     void assignProperty(QObject *object, const char *name,
                         const QVariant &value);
-// #endif
+#endif
 
 Q_SIGNALS:
     void finished(QPrivateSignal);

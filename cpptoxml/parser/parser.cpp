@@ -109,7 +109,7 @@ bool Parser::parseWinDeclSpec(WinDeclSpecAST *&node)
     return false;
 
   std::size_t start = token_stream.cursor();
-
+  const char * text = token_stream.token(start).text + token_stream.token(start).position;
   const NameSymbol *name_symbol = token_stream.symbol(token_stream.cursor());
   QString name = name_symbol->as_string();
   if (name != QLatin1String("__declspec"))
@@ -178,7 +178,8 @@ void Parser::reportError(const QString& msg)
             &line, &column, &fileName);
 
         Control::ErrorMessage errmsg;
-        errmsg.setLine(line + 1);
+		//errmsg.setLine(line + 1);
+		errmsg.setLine(line);
         errmsg.setColumn(column);
         errmsg.setFileName(fileName);
         errmsg.setMessage(QLatin1String("** PARSER ERROR ") + msg);
@@ -328,12 +329,13 @@ bool Parser::skip(int l, int r)
 bool Parser::parseName(NameAST *&node, bool acceptTemplateId)
 {
   std::size_t start = token_stream.cursor();
-
+  const char * text = token_stream.token(start).text + token_stream.token(start).position;
   WinDeclSpecAST *winDeclSpec = 0;
   parseWinDeclSpec(winDeclSpec);
 
   NameAST *ast = CreateNode<NameAST>(_M_pool);
 
+   // ::xxx
   if (token_stream.lookAhead() == Token_scope)
     {
       ast->global = true;
@@ -348,6 +350,7 @@ bool Parser::parseName(NameAST *&node, bool acceptTemplateId)
       if (!parseUnqualifiedName(n))
         return false;
 
+      // xxx::xxx
       if (token_stream.lookAhead() == Token_scope)
         {
           token_stream.nextToken();
@@ -380,15 +383,16 @@ bool Parser::parseName(NameAST *&node, bool acceptTemplateId)
 
   UPDATE_POS(ast, start, token_stream.cursor());
   node = ast;
-
+  char* qs = Parser::tokenText(ast).toLatin1().data();
   return true;
 }
 
 bool Parser::parseTranslationUnit(TranslationUnitAST *&node)
 {
   std::size_t start = token_stream.cursor();
+  const char * text = token_stream.token(start).text + token_stream.token(start).position;
   TranslationUnitAST *ast = CreateNode<TranslationUnitAST>(_M_pool);
-
+  
   while (token_stream.lookAhead())
     {
       std::size_t startDecl = token_stream.cursor();
@@ -407,21 +411,25 @@ bool Parser::parseTranslationUnit(TranslationUnitAST *&node)
               // skip at least one token
               token_stream.nextToken();
             }
-
-          skipUntilDeclaration();
+		  token_stream.rewind((int)startDecl);
+		  const char * text1 = token_stream.token((int)token_stream.cursor()).text + token_stream.token((int)token_stream.cursor()).position;
+          skipUntil(';');
+		  CHECK(';');
+		  const char * text2 = token_stream.token((int)token_stream.cursor()).text + token_stream.token((int)token_stream.cursor()).position;
+		  continue;
         }
     }
 
   UPDATE_POS(ast, start, token_stream.cursor());
   node = ast;
-
+  char* qs = Parser::tokenText(ast).toLatin1().data();
   return true;
 }
 
 bool Parser::parseDeclaration(DeclarationAST *&node)
 {
   std::size_t start = token_stream.cursor();
-
+  const char * text = token_stream.token(start).text + token_stream.token(start).position;
   switch(token_stream.lookAhead())
     {
     case ';':
@@ -481,7 +489,7 @@ bool Parser::parseDeclaration(DeclarationAST *&node)
             ast->init_declarators = declarators;
             UPDATE_POS(ast, start, token_stream.cursor());
             node = ast;
-
+			char* qs = Parser::tokenText(ast).toLatin1().data();
             return true;
           }
       }
@@ -494,7 +502,7 @@ bool Parser::parseDeclaration(DeclarationAST *&node)
 bool Parser::parseLinkageSpecification(DeclarationAST *&node)
 {
   std::size_t start = token_stream.cursor();
-
+  const char * text = token_stream.token(start).text + token_stream.token(start).position;
   CHECK(Token_extern);
 
   LinkageSpecificationAST *ast = CreateNode<LinkageSpecificationAST>(_M_pool);
@@ -516,14 +524,14 @@ bool Parser::parseLinkageSpecification(DeclarationAST *&node)
 
   UPDATE_POS(ast, start, token_stream.cursor());
   node = ast;
-
+  char* qs = Parser::tokenText(ast).toLatin1().data();
   return true;
 }
 
 bool Parser::parseLinkageBody(LinkageBodyAST *&node)
 {
   std::size_t start = token_stream.cursor();
-
+  const char * text = token_stream.token(start).text + token_stream.token(start).position;
   CHECK('{');
 
   LinkageBodyAST *ast = CreateNode<LinkageBodyAST>(_M_pool);
@@ -562,14 +570,14 @@ bool Parser::parseLinkageBody(LinkageBodyAST *&node)
 
   UPDATE_POS(ast, start, token_stream.cursor());
   node = ast;
-
+  char* qs = Parser::tokenText(ast).toLatin1().data();
   return true;
 }
 
 bool Parser::parseNamespace(DeclarationAST *&node)
 {
   std::size_t start = token_stream.cursor();
-
+  const char * text = token_stream.token(start).text + token_stream.token(start).position;
   CHECK(Token_namespace);
 
   std::size_t namespace_name = 0;
@@ -595,6 +603,7 @@ bool Parser::parseNamespace(DeclarationAST *&node)
           ast->alias_name = name;
           UPDATE_POS(ast, start, token_stream.cursor());
           node = ast;
+		  char* qs = Parser::tokenText(ast).toLatin1().data();
           return true;
         }
       else
@@ -615,14 +624,14 @@ bool Parser::parseNamespace(DeclarationAST *&node)
 
   UPDATE_POS(ast, start, token_stream.cursor());
   node = ast;
-
+  char* qs = Parser::tokenText(ast).toLatin1().data();
   return true;
 }
 
 bool Parser::parseUsing(DeclarationAST *&node)
 {
   std::size_t start = token_stream.cursor();
-
+  const char * text = token_stream.token(start).text + token_stream.token(start).position;
   CHECK(Token_using);
 
   if (token_stream.lookAhead() == Token_namespace)
@@ -639,18 +648,49 @@ bool Parser::parseUsing(DeclarationAST *&node)
   if (!parseName(ast->name))
     return false;
 
+  // using xxx = xxx;
+  if (token_stream.lookAhead() == '=')
+  {
+	  CHECK('=');
+	  TypeSpecifierAST *spec = 0;
+	  if (!parseTypeSpecifierOrClassSpec(spec))
+	  {
+		  reportError(("Need a type specifier to declare"));
+		  return false;
+	  }
+
+	  token_stream.rewind((int)ast->name->start_token);
+	  const ListNode<InitDeclaratorAST*> *declarators = 0;
+	  if (!parseInitDeclaratorList(declarators))
+	  {
+		  //reportError(("Need an identifier to declare"));
+		  //return false;
+	  }
+	  token_stream.rewind((int)spec->end_token);
+	  ADVANCE(';', ";");
+
+	  TypedefAST *ast_ = CreateNode<TypedefAST>(_M_pool);
+	  ast_->type_specifier = spec;
+	  ast_->init_declarators = declarators;
+
+	  UPDATE_POS(ast_, start, token_stream.cursor());
+	  node = ast_;
+	  char* qs = Parser::tokenText(ast_).toLatin1().data();
+	  return true;
+  }
+
   ADVANCE(';', ";");
 
   UPDATE_POS(ast, start, token_stream.cursor());
   node = ast;
-
+  char* qs = Parser::tokenText(ast).toLatin1().data();
   return true;
 }
 
 bool Parser::parseUsingDirective(DeclarationAST *&node)
 {
   std::size_t start = token_stream.cursor();
-
+  const char * text = token_stream.token(start).text + token_stream.token(start).position;
   CHECK(Token_namespace);
 
   NameAST *name = 0;
@@ -666,7 +706,7 @@ bool Parser::parseUsingDirective(DeclarationAST *&node)
   ast->name = name;
   UPDATE_POS(ast, start, token_stream.cursor());
   node = ast;
-
+  char* qs = Parser::tokenText(ast).toLatin1().data();
   return true;
 }
 
@@ -674,7 +714,7 @@ bool Parser::parseUsingDirective(DeclarationAST *&node)
 bool Parser::parseOperatorFunctionId(OperatorFunctionIdAST *&node)
 {
   std::size_t start = token_stream.cursor();
-
+  const char * text = token_stream.token(start).text + token_stream.token(start).position;
   CHECK(Token_operator);
 
   OperatorFunctionIdAST *ast = CreateNode<OperatorFunctionIdAST>(_M_pool);
@@ -740,7 +780,7 @@ bool Parser::parseTemplateArgumentList(const ListNode<TemplateArgumentAST*> *&no
 bool Parser::parseTypedef(DeclarationAST *&node)
 {
   std::size_t start = token_stream.cursor();
-
+  const char * text = token_stream.token(start).text + token_stream.token(start).position;
   CHECK(Token_typedef);
 
   TypeSpecifierAST *spec = 0;
@@ -765,14 +805,14 @@ bool Parser::parseTypedef(DeclarationAST *&node)
 
   UPDATE_POS(ast, start, token_stream.cursor());
   node = ast;
-
+  char* qs = Parser::tokenText(ast).toLatin1().data();
   return true;
 }
 
 bool Parser::parseAsmDefinition(DeclarationAST *&node)
 {
   std::size_t start = token_stream.cursor();
-
+  const char * text = token_stream.token(start).text + token_stream.token(start).position;
   ADVANCE(Token_asm, "asm");
 
   const ListNode<std::size_t> *cv = 0;
@@ -789,14 +829,14 @@ bool Parser::parseAsmDefinition(DeclarationAST *&node)
   ast->cv = cv;
   UPDATE_POS(ast, start, token_stream.cursor());
   node = ast;
-
+  char* qs = Parser::tokenText(ast).toLatin1().data();
   return true;
 }
 
 bool Parser::parseTemplateDeclaration(DeclarationAST *&node)
 {
   std::size_t start = token_stream.cursor();
-
+  const char * text = token_stream.token(start).text + token_stream.token(start).position;
   std::size_t exported = 0;
   if (token_stream.lookAhead() == Token_export)
     {
@@ -828,14 +868,14 @@ bool Parser::parseTemplateDeclaration(DeclarationAST *&node)
 
   UPDATE_POS(ast, start, token_stream.cursor());
   node = ast;
-
+  char* qs = Parser::tokenText(ast).toLatin1().data();
   return true;
 }
 
 bool Parser::parseOperator(OperatorAST *&node)
 {
   std::size_t start = token_stream.cursor();
-
+  const char * text = token_stream.token(start).text + token_stream.token(start).position;
   OperatorAST *ast = CreateNode<OperatorAST>(_M_pool);
 
   switch(token_stream.lookAhead())
@@ -913,14 +953,14 @@ bool Parser::parseOperator(OperatorAST *&node)
 
   UPDATE_POS(ast, start, token_stream.cursor());
   node = ast;
-
+  char* qs = Parser::tokenText(ast).toLatin1().data();
   return true;
 }
 
 bool Parser::parseCvQualify(const ListNode<std::size_t> *&node)
 {
   std::size_t start = token_stream.cursor();
-
+  const char * text = token_stream.token(start).text + token_stream.token(start).position;
   int tk;
   while (0 != (tk = token_stream.lookAhead())
          && (tk == Token_const || tk == Token_volatile))
@@ -936,6 +976,7 @@ bool Parser::parseSimpleTypeSpecifier(TypeSpecifierAST *&node,
                                       bool onlyIntegral)
 {
   std::size_t start = token_stream.cursor();
+  const char * text = token_stream.token(start).text + token_stream.token(start).position;
   bool isIntegral = false;
   bool done = false;
 
@@ -1012,7 +1053,7 @@ bool Parser::parseSimpleTypeSpecifier(TypeSpecifierAST *&node,
 
   UPDATE_POS(ast, start, token_stream.cursor());
   node = ast;
-
+  char* qs = Parser::tokenText(ast).toLatin1().data();
   return true;
 }
 
@@ -1027,7 +1068,7 @@ bool Parser::parsePtrOperator(PtrOperatorAST *&node)
     }
 
   std::size_t start = token_stream.cursor();
-
+  const char * text = token_stream.token(start).text + token_stream.token(start).position;
   PtrOperatorAST *ast = CreateNode<PtrOperatorAST>(_M_pool);
 
   switch (token_stream.lookAhead())
@@ -1058,14 +1099,14 @@ bool Parser::parsePtrOperator(PtrOperatorAST *&node)
 
   UPDATE_POS(ast, start, token_stream.cursor());
   node = ast;
-
+  char* qs = Parser::tokenText(ast).toLatin1().data();
   return true;
 }
 
 bool Parser::parseTemplateArgument(TemplateArgumentAST *&node)
 {
   std::size_t start = token_stream.cursor();
-
+  const char * text = token_stream.token(start).text + token_stream.token(start).position;
   TypeIdAST *typeId = 0;
   ExpressionAST *expr = 0;
 
@@ -1084,14 +1125,14 @@ bool Parser::parseTemplateArgument(TemplateArgumentAST *&node)
 
   UPDATE_POS(ast, start, token_stream.cursor());
   node = ast;
-
+  char* qs = Parser::tokenText(ast).toLatin1().data();
   return true;
 }
 
 bool Parser::parseTypeSpecifier(TypeSpecifierAST *&node)
 {
   std::size_t start = token_stream.cursor();
-
+  const char * text = token_stream.token(start).text + token_stream.token(start).position;
   const ListNode<std::size_t> *cv = 0;
   parseCvQualify(cv);
 
@@ -1106,14 +1147,14 @@ bool Parser::parseTypeSpecifier(TypeSpecifierAST *&node)
   ast->cv = cv;
 
   node = ast;
-
+  char* qs = Parser::tokenText(ast).toLatin1().data();
   return true;
 }
 
 bool Parser::parseDeclarator(DeclaratorAST *&node)
 {
   std::size_t start = token_stream.cursor();
-
+  const char * text = token_stream.token(start).text + token_stream.token(start).position;
   DeclaratorAST *ast = CreateNode<DeclaratorAST>(_M_pool);
 
   DeclaratorAST *decl = 0;
@@ -1244,14 +1285,14 @@ bool Parser::parseDeclarator(DeclaratorAST *&node)
  update_pos:
   UPDATE_POS(ast, start, token_stream.cursor());
   node = ast;
-
+  char* qs = Parser::tokenText(ast).toLatin1().data();
   return true;
 }
 
 bool Parser::parseAbstractDeclarator(DeclaratorAST *&node)
 {
   std::size_t start = token_stream.cursor();
-
+  const char * text = token_stream.token(start).text + token_stream.token(start).position;
   DeclaratorAST *ast = CreateNode<DeclaratorAST>(_M_pool);
   DeclaratorAST *decl = 0;
 
@@ -1351,14 +1392,14 @@ bool Parser::parseAbstractDeclarator(DeclaratorAST *&node)
 
   UPDATE_POS(ast, start, token_stream.cursor());
   node = ast;
-
+  char* qs = Parser::tokenText(ast).toLatin1().data();
   return true;
 }
 
 bool Parser::parseEnumSpecifier(TypeSpecifierAST *&node)
 {
   std::size_t start = token_stream.cursor();
-
+  const char * text = token_stream.token(start).text + token_stream.token(start).position;
   CHECK(Token_enum);
 
   bool class_enum = false;
@@ -1373,14 +1414,14 @@ bool Parser::parseEnumSpecifier(TypeSpecifierAST *&node)
 
   // skip enum class ident_name {: type};
   if (token_stream.lookAhead() == ':') {
-    if (token_stream.lookAhead(1) != Token_identifier) {
+    if (token_stream.lookAhead(1) != Token_identifier && token_stream.lookAhead(1) != Token_int) {
       token_stream.rewind((int) start);
       return false;
     }
     token_stream.nextToken();
     token_stream.nextToken();
   }
-    
+
   if (token_stream.lookAhead() != '{')
     {
       token_stream.rewind((int) start);
@@ -1417,7 +1458,7 @@ bool Parser::parseEnumSpecifier(TypeSpecifierAST *&node)
 
   UPDATE_POS(ast, start, token_stream.cursor());
   node = ast;
-
+  char* qs = Parser::tokenText(ast).toLatin1().data();
   return true;
 }
 
@@ -1436,6 +1477,7 @@ bool Parser::parseTemplateParameterList(const ListNode<TemplateParameterAST*> *&
       if (!parseTemplateParameter(param))
         {
           syntaxError();
+		  skipUntil('>');
           break;
         }
       else
@@ -1450,6 +1492,7 @@ bool Parser::parseTemplateParameterList(const ListNode<TemplateParameterAST*> *&
 bool Parser::parseTemplateParameter(TemplateParameterAST *&node)
 {
   std::size_t start = token_stream.cursor();
+  const char * text = token_stream.token(start).text + token_stream.token(start).position;
   TemplateParameterAST *ast = CreateNode<TemplateParameterAST>(_M_pool);
 
   int tk = token_stream.lookAhead();
@@ -1464,14 +1507,14 @@ bool Parser::parseTemplateParameter(TemplateParameterAST *&node)
 
   UPDATE_POS(ast, start, token_stream.cursor());
   node = ast;
-
+  char* qs = Parser::tokenText(ast).toLatin1().data();
   return true;
 }
 
 bool Parser::parseTypeParameter(TypeParameterAST *&node)
 {
   std::size_t start = token_stream.cursor();
-
+  const char * text = token_stream.token(start).text + token_stream.token(start).position;
   TypeParameterAST *ast = CreateNode<TypeParameterAST>(_M_pool);
   ast->type = start;
 
@@ -1551,13 +1594,14 @@ bool Parser::parseTypeParameter(TypeParameterAST *&node)
 
   UPDATE_POS(ast, start, token_stream.cursor());
   node = ast;
+  char* qs = Parser::tokenText(ast).toLatin1().data();
   return true;
 }
 
 bool Parser::parseStorageClassSpecifier(const ListNode<std::size_t> *&node)
 {
   std::size_t start = token_stream.cursor();
-
+  const char * text = token_stream.token(start).text + token_stream.token(start).position;
   int tk;
   while (0 != (tk = token_stream.lookAhead())
          && (tk == Token_friend || tk == Token_auto
@@ -1574,7 +1618,7 @@ bool Parser::parseStorageClassSpecifier(const ListNode<std::size_t> *&node)
 bool Parser::parseFunctionSpecifier(const ListNode<std::size_t> *&node)
 {
   std::size_t start = token_stream.cursor();
-
+  const char * text = token_stream.token(start).text + token_stream.token(start).position;
   int tk;
   while (0 != (tk = token_stream.lookAhead())
          && (tk == Token_inline || tk == Token_virtual
@@ -1591,7 +1635,7 @@ bool Parser::parseTypeId(TypeIdAST *&node)
 {
   /// @todo implement the AST for typeId
   std::size_t start = token_stream.cursor();
-
+  const char * text = token_stream.token(start).text + token_stream.token(start).position;
   TypeSpecifierAST *spec = 0;
   if (!parseTypeSpecifier(spec))
     {
@@ -1608,7 +1652,7 @@ bool Parser::parseTypeId(TypeIdAST *&node)
 
   UPDATE_POS(ast, start, token_stream.cursor());
   node = ast;
-
+  char* qs = Parser::tokenText(ast).toLatin1().data();
   return true;
 }
 
@@ -1638,7 +1682,7 @@ bool Parser::parseInitDeclaratorList(const ListNode<InitDeclaratorAST*> *&node)
 bool Parser::parseParameterDeclarationClause(ParameterDeclarationClauseAST *&node)
 {
   std::size_t start = token_stream.cursor();
-
+  const char * text = token_stream.token(start).text + token_stream.token(start).position;
   ParameterDeclarationClauseAST *ast
     = CreateNode<ParameterDeclarationClauseAST>(_M_pool);
 
@@ -1668,14 +1712,14 @@ bool Parser::parseParameterDeclarationClause(ParameterDeclarationClauseAST *&nod
   /// @todo add ellipsis
   UPDATE_POS(ast, start, token_stream.cursor());
   node = ast;
-
+  char* qs = Parser::tokenText(ast).toLatin1().data();
   return true;
 }
 
 bool Parser::parseParameterDeclarationList(const ListNode<ParameterDeclarationAST*> *&node)
 {
   std::size_t start = token_stream.cursor();
-
+  const char * text = token_stream.token(start).text + token_stream.token(start).position;
   ParameterDeclarationAST *param = 0;
   if (!parseParameterDeclaration(param))
     {
@@ -1706,7 +1750,7 @@ bool Parser::parseParameterDeclarationList(const ListNode<ParameterDeclarationAS
 bool Parser::parseParameterDeclaration(ParameterDeclarationAST *&node)
 {
   std::size_t start = token_stream.cursor();
-
+  const char * text = token_stream.token(start).text + token_stream.token(start).position;
   const ListNode<std::size_t> *storage = 0;
   parseStorageClassSpecifier(storage);
 
@@ -1746,7 +1790,7 @@ bool Parser::parseParameterDeclaration(ParameterDeclarationAST *&node)
 
   UPDATE_POS(ast, start, token_stream.cursor());
   node = ast;
-
+  char* qs = Parser::tokenText(ast).toLatin1().data();
   return true;
 }
 
@@ -1786,7 +1830,7 @@ QString Parser::tokenText(AST *ast) const
 bool Parser::parseForwardDeclarationSpecifier(TypeSpecifierAST *&node)
 {
   std::size_t start = token_stream.cursor();
-
+  const char * text = token_stream.token(start).text + token_stream.token(start).position;
   int kind = token_stream.lookAhead();
   if (kind != Token_class && kind != Token_struct && kind != Token_union)
     return false;
@@ -1823,14 +1867,14 @@ bool Parser::parseForwardDeclarationSpecifier(TypeSpecifierAST *&node)
 
   UPDATE_POS(ast, start, token_stream.cursor());
   node = ast;
-
+  char* qs = Parser::tokenText(ast).toLatin1().data();
   return true;
 }
 
 bool Parser::parseClassSpecifier(TypeSpecifierAST *&node)
 {
   std::size_t start = token_stream.cursor();
-
+  const char * text = token_stream.token(start).text + token_stream.token(start).position;
   int kind = token_stream.lookAhead();
   if (kind != Token_class && kind != Token_struct && kind != Token_union)
     return false;
@@ -1901,14 +1945,14 @@ bool Parser::parseClassSpecifier(TypeSpecifierAST *&node)
 
   UPDATE_POS(ast, start, token_stream.cursor());
   node = ast;
-
+  char* qs = Parser::tokenText(ast).toLatin1().data();
   return true;
 }
 
 bool Parser::parseAccessSpecifier(DeclarationAST *&node)
 {
   std::size_t start = token_stream.cursor();
-
+  const char * text = token_stream.token(start).text + token_stream.token(start).position;
   const ListNode<std::size_t> *specs = 0;
 
   bool done = false;
@@ -1942,14 +1986,14 @@ bool Parser::parseAccessSpecifier(DeclarationAST *&node)
   ast->specs = specs;
   UPDATE_POS(ast, start, token_stream.cursor());
   node = ast;
-
+  char* qs = Parser::tokenText(ast).toLatin1().data();
   return true;
 }
 
 bool Parser::parseMemberSpecification(DeclarationAST *&node)
 {
   std::size_t start = token_stream.cursor();
-
+  const char * text = token_stream.token(start).text + token_stream.token(start).position;
   if (token_stream.lookAhead() == ';')
     {
       token_stream.nextToken();
@@ -2010,7 +2054,7 @@ bool Parser::parseMemberSpecification(DeclarationAST *&node)
       ast->init_declarators = declarators;
       UPDATE_POS(ast, start, token_stream.cursor());
       node = ast;
-
+	  char* qs = Parser::tokenText(ast).toLatin1().data();
       return true;
     }
 
@@ -2021,7 +2065,7 @@ bool Parser::parseMemberSpecification(DeclarationAST *&node)
 bool Parser::parseCtorInitializer(CtorInitializerAST *&node)
 {
   std::size_t start = token_stream.cursor();
-
+  const char * text = token_stream.token(start).text + token_stream.token(start).position;
   CHECK(':');
 
   CtorInitializerAST *ast = CreateNode<CtorInitializerAST>(_M_pool);
@@ -2034,14 +2078,14 @@ bool Parser::parseCtorInitializer(CtorInitializerAST *&node)
 
   UPDATE_POS(ast, start, token_stream.cursor());
   node = ast;
-
+  char* qs = Parser::tokenText(ast).toLatin1().data();
   return true;
 }
 
 bool Parser::parseElaboratedTypeSpecifier(TypeSpecifierAST *&node)
 {
   std::size_t start = token_stream.cursor();
-
+  const char * text = token_stream.token(start).text + token_stream.token(start).position;
   int tk = token_stream.lookAhead();
   if (tk == Token_class  ||
       tk == Token_struct ||
@@ -2068,7 +2112,7 @@ bool Parser::parseElaboratedTypeSpecifier(TypeSpecifierAST *&node)
 
           UPDATE_POS(ast, start, token_stream.cursor());
           node = ast;
-            
+		  char* qs = Parser::tokenText(ast).toLatin1().data();
           // skip enum class ident_name {: type};
           if (tk == Token_enum && token_stream.lookAhead() == ':') {
             if (token_stream.lookAhead(1) != Token_identifier) {
@@ -2089,7 +2133,7 @@ bool Parser::parseElaboratedTypeSpecifier(TypeSpecifierAST *&node)
 bool Parser::parseExceptionSpecification(ExceptionSpecificationAST *&node)
 {
   std::size_t start = token_stream.cursor();
-
+  const char * text = token_stream.token(start).text + token_stream.token(start).position;
   CHECK(Token_throw);
   ADVANCE('(', "(");
 
@@ -2110,14 +2154,14 @@ bool Parser::parseExceptionSpecification(ExceptionSpecificationAST *&node)
 
   UPDATE_POS(ast, start, token_stream.cursor());
   node = ast;
-
+  char* qs = Parser::tokenText(ast).toLatin1().data();
   return true;
 }
 
 bool Parser::parseEnumerator(EnumeratorAST *&node)
 {
   std::size_t start = token_stream.cursor();
-
+  const char * text = token_stream.token(start).text + token_stream.token(start).position;
   CHECK(Token_identifier);
   std::size_t id = token_stream.cursor() - 1;
 
@@ -2136,14 +2180,14 @@ bool Parser::parseEnumerator(EnumeratorAST *&node)
 
   UPDATE_POS(ast, start, token_stream.cursor());
   node = ast;
-
+  char* qs = Parser::tokenText(ast).toLatin1().data();
   return true;
 }
 
 bool Parser::parseInitDeclarator(InitDeclaratorAST *&node)
 {
   std::size_t start = token_stream.cursor();
-
+  const char * text = token_stream.token(start).text + token_stream.token(start).position;
   DeclaratorAST *decl = 0;
   if (!parseDeclarator(decl))
     {
@@ -2166,14 +2210,14 @@ bool Parser::parseInitDeclarator(InitDeclaratorAST *&node)
 
   UPDATE_POS(ast, start, token_stream.cursor());
   node = ast;
-
+  char* qs = Parser::tokenText(ast).toLatin1().data();
   return true;
 }
 
 bool Parser::parseBaseClause(BaseClauseAST *&node)
 {
   std::size_t start = token_stream.cursor();
-
+  const char * text = token_stream.token(start).text + token_stream.token(start).position;
   CHECK(':');
 
   BaseSpecifierAST *baseSpec = 0;
@@ -2197,14 +2241,15 @@ bool Parser::parseBaseClause(BaseClauseAST *&node)
 
   UPDATE_POS(ast, start, token_stream.cursor());
   node = ast;
-
+  char* qs = Parser::tokenText(ast).toLatin1().data();
   return true;
 }
 
 bool Parser::parseInitializer(InitializerAST *&node)
 {
+  //初始化，a=xxx或a(xxx)
   std::size_t start = token_stream.cursor();
-
+  const char * text = token_stream.token(start).text + token_stream.token(start).position;
   int tk = token_stream.lookAhead();
   if (tk != '=' && tk != '(')
     return false;
@@ -2229,7 +2274,7 @@ bool Parser::parseInitializer(InitializerAST *&node)
 
   UPDATE_POS(ast, start, token_stream.cursor());
   node = ast;
-
+  char* qs = Parser::tokenText(ast).toLatin1().data();
   return true;
 }
 
@@ -2258,7 +2303,7 @@ bool Parser::parseMemInitializerList(const ListNode<MemInitializerAST*> *&node)
 bool Parser::parseMemInitializer(MemInitializerAST *&node)
 {
   std::size_t start = token_stream.cursor();
-
+  const char * text = token_stream.token(start).text + token_stream.token(start).position;
   NameAST *initId = 0;
   if (!parseName(initId, true))
     {
@@ -2277,7 +2322,7 @@ bool Parser::parseMemInitializer(MemInitializerAST *&node)
 
   UPDATE_POS(ast, start, token_stream.cursor());
   node = ast;
-
+  char* qs = Parser::tokenText(ast).toLatin1().data();
   return true;
 }
 
@@ -2309,7 +2354,7 @@ bool Parser::parseTypeIdList(const ListNode<TypeIdAST*> *&node)
 bool Parser::parseBaseSpecifier(BaseSpecifierAST *&node)
 {
   std::size_t start = token_stream.cursor();
-
+  const char * text = token_stream.token(start).text + token_stream.token(start).position;
   BaseSpecifierAST *ast = CreateNode<BaseSpecifierAST>(_M_pool);
 
   if (token_stream.lookAhead() == Token_virtual)
@@ -2347,14 +2392,15 @@ bool Parser::parseBaseSpecifier(BaseSpecifierAST *&node)
 
   UPDATE_POS(ast, start, token_stream.cursor());
   node = ast;
-
+  char* qs = Parser::tokenText(ast).toLatin1().data();
   return true;
 }
 
 bool Parser::parseInitializerClause(InitializerClauseAST *&node)
 {
+   // a = xxx
   std::size_t start = token_stream.cursor();
-
+  const char * text = token_stream.token(start).text + token_stream.token(start).position;
   InitializerClauseAST *ast = CreateNode<InitializerClauseAST>(_M_pool);
 
   if (token_stream.lookAhead() == '{')
@@ -2377,7 +2423,7 @@ bool Parser::parseInitializerClause(InitializerClauseAST *&node)
 
   UPDATE_POS(ast, start, token_stream.cursor());
   node = ast;
-
+  char* qs = Parser::tokenText(ast).toLatin1().data();
   return true;
 }
 
@@ -2388,7 +2434,7 @@ bool Parser::parsePtrToMember(PtrToMemberAST *&node)
 #endif
 
   std::size_t start = token_stream.cursor();
-
+const char * text = token_stream.token(start).text + token_stream.token(start).position;
   std::size_t global_scope = 0;
   if (token_stream.lookAhead() == Token_scope)
     {
@@ -2411,7 +2457,7 @@ bool Parser::parsePtrToMember(PtrToMemberAST *&node)
           PtrToMemberAST *ast = CreateNode<PtrToMemberAST>(_M_pool);
           UPDATE_POS(ast, start, token_stream.cursor());
           node = ast;
-
+		  char* qs = Parser::tokenText(ast).toLatin1().data();
           return true;
         }
 
@@ -2427,7 +2473,7 @@ bool Parser::parseUnqualifiedName(UnqualifiedNameAST *&node,
                                   bool parseTemplateId)
 {
   std::size_t start = token_stream.cursor();
-
+  const char * text = token_stream.token(start).text + token_stream.token(start).position;
   std::size_t tilde = 0;
   std::size_t id = 0;
   OperatorFunctionIdAST *operator_id = 0;
@@ -2486,14 +2532,14 @@ bool Parser::parseUnqualifiedName(UnqualifiedNameAST *&node,
 
   UPDATE_POS(ast, start, token_stream.cursor());
   node = ast;
-
+  char* qs = Parser::tokenText(ast).toLatin1().data();
   return true;
 }
 
 bool Parser::parseStringLiteral(StringLiteralAST *&node)
 {
   std::size_t start = token_stream.cursor();
-
+  const char * text = token_stream.token(start).text + token_stream.token(start).position;
   if (token_stream.lookAhead() != Token_string_literal)
     return false;
 
@@ -2507,14 +2553,14 @@ bool Parser::parseStringLiteral(StringLiteralAST *&node)
 
   UPDATE_POS(ast, start, token_stream.cursor());
   node = ast;
-
+  char* qs = Parser::tokenText(ast).toLatin1().data();
   return true;
 }
 
 bool Parser::parseExpressionStatement(StatementAST *&node)
 {
   std::size_t start = token_stream.cursor();
-
+  const char * text = token_stream.token(start).text + token_stream.token(start).position;
   ExpressionAST *expr = 0;
   parseCommaExpression(expr);
 
@@ -2525,14 +2571,14 @@ bool Parser::parseExpressionStatement(StatementAST *&node)
 
   UPDATE_POS(ast, start, token_stream.cursor());
   node = ast;
-
+  char* qs = Parser::tokenText(ast).toLatin1().data();
   return true;
 }
 
 bool Parser::parseStatement(StatementAST *&node)
 {
   std::size_t start = token_stream.cursor();
-
+  const char * text = token_stream.token(start).text + token_stream.token(start).position;
   switch(token_stream.lookAhead())
     {
     case Token_while:
@@ -2588,6 +2634,7 @@ bool Parser::parseStatement(StatementAST *&node)
 
         UPDATE_POS(ast, start, token_stream.cursor());
         node = ast;
+		char* qs = Parser::tokenText(ast).toLatin1().data();
       }
       return true;
 
@@ -2608,7 +2655,7 @@ bool Parser::parseExpressionOrDeclarationStatement(StatementAST *&node)
   bool blocked = block_errors(true);
 
   std::size_t start = token_stream.cursor();
-
+  const char * text = token_stream.token(start).text + token_stream.token(start).position;
   StatementAST *decl_ast = 0;
   bool maybe_amb = parseDeclarationStatement(decl_ast);
   maybe_amb &= token_stream.kind(token_stream.cursor() - 1) == ';';
@@ -2630,6 +2677,7 @@ bool Parser::parseExpressionOrDeclarationStatement(StatementAST *&node)
 
       UPDATE_POS(ast, start, token_stream.cursor());
       node = ast;
+	  char* qs = Parser::tokenText(ast).toLatin1().data();
     }
   else
     {
@@ -2651,7 +2699,7 @@ bool Parser::parseExpressionOrDeclarationStatement(StatementAST *&node)
 bool Parser::parseCondition(ConditionAST *&node, bool initRequired)
 {
   std::size_t start = token_stream.cursor();
-
+  const char * text = token_stream.token(start).text + token_stream.token(start).position;
   ConditionAST *ast = CreateNode<ConditionAST>(_M_pool);
   TypeSpecifierAST *spec = 0;
 
@@ -2682,7 +2730,7 @@ bool Parser::parseCondition(ConditionAST *&node, bool initRequired)
 
           UPDATE_POS(ast, start, token_stream.cursor());
           node = ast;
-
+		  char* qs = Parser::tokenText(ast).toLatin1().data();
           return true;
         }
     }
@@ -2694,7 +2742,7 @@ bool Parser::parseCondition(ConditionAST *&node, bool initRequired)
 
   UPDATE_POS(ast, start, token_stream.cursor());
   node = ast;
-
+  char* qs = Parser::tokenText(ast).toLatin1().data();
   return true;
 }
 
@@ -2702,7 +2750,7 @@ bool Parser::parseCondition(ConditionAST *&node, bool initRequired)
 bool Parser::parseWhileStatement(StatementAST *&node)
 {
   std::size_t start = token_stream.cursor();
-
+  const char * text = token_stream.token(start).text + token_stream.token(start).position;
   ADVANCE(Token_while, "while");
   ADVANCE('(' , "(");
 
@@ -2727,14 +2775,14 @@ bool Parser::parseWhileStatement(StatementAST *&node)
 
   UPDATE_POS(ast, start, token_stream.cursor());
   node = ast;
-
+  char* qs = Parser::tokenText(ast).toLatin1().data();
   return true;
 }
 
 bool Parser::parseDoStatement(StatementAST *&node)
 {
   std::size_t start = token_stream.cursor();
-
+  const char * text = token_stream.token(start).text + token_stream.token(start).position;
   ADVANCE(Token_do, "do");
 
   StatementAST *body = 0;
@@ -2763,14 +2811,14 @@ bool Parser::parseDoStatement(StatementAST *&node)
 
   UPDATE_POS(ast, start, token_stream.cursor());
   node = ast;
-
+  char* qs = Parser::tokenText(ast).toLatin1().data();
   return true;
 }
 
 bool Parser::parseForStatement(StatementAST *&node)
 {
   std::size_t start = token_stream.cursor();
-
+  const char * text = token_stream.token(start).text + token_stream.token(start).position;
   ADVANCE(Token_for, "for");
   ADVANCE('(', "(");
 
@@ -2801,7 +2849,7 @@ bool Parser::parseForStatement(StatementAST *&node)
 
   UPDATE_POS(ast, start, token_stream.cursor());
   node = ast;
-
+  char* qs = Parser::tokenText(ast).toLatin1().data();
   return true;
 }
 
@@ -2816,7 +2864,7 @@ bool Parser::parseForInitStatement(StatementAST *&node)
 bool Parser::parseCompoundStatement(StatementAST *&node)
 {
   std::size_t start = token_stream.cursor();
-
+  const char * text = token_stream.token(start).text + token_stream.token(start).position;
   CHECK('{');
 
   CompoundStatementAST *ast = CreateNode<CompoundStatementAST>(_M_pool);
@@ -2846,14 +2894,14 @@ bool Parser::parseCompoundStatement(StatementAST *&node)
 
   UPDATE_POS(ast, start, token_stream.cursor());
   node = ast;
-
+  char* qs = Parser::tokenText(ast).toLatin1().data();
   return true;
 }
 
 bool Parser::parseIfStatement(StatementAST *&node)
 {
   std::size_t start = token_stream.cursor();
-
+  const char * text = token_stream.token(start).text + token_stream.token(start).position;
   ADVANCE(Token_if, "if");
 
   ADVANCE('(' , "(");
@@ -2891,13 +2939,14 @@ bool Parser::parseIfStatement(StatementAST *&node)
 
   UPDATE_POS(ast, start, token_stream.cursor());
   node = ast;
-
+  char* qs = Parser::tokenText(ast).toLatin1().data();
   return true;
 }
 
 bool Parser::parseSwitchStatement(StatementAST *&node)
 {
   std::size_t start = token_stream.cursor();
+  const char * text = token_stream.token(start).text + token_stream.token(start).position;
   ADVANCE(Token_switch, "switch");
 
   ADVANCE('(' , "(");
@@ -2923,7 +2972,7 @@ bool Parser::parseSwitchStatement(StatementAST *&node)
 
   UPDATE_POS(ast, start, token_stream.cursor());
   node = ast;
-
+  char* qs = Parser::tokenText(ast).toLatin1().data();
   return true;
 }
 
@@ -2996,7 +3045,7 @@ bool Parser::parseBlockDeclaration(DeclarationAST *&node)
     }
 
   std::size_t start = token_stream.cursor();
-
+  const char * text = token_stream.token(start).text + token_stream.token(start).position;
   const ListNode<std::size_t> *cv = 0;
   parseCvQualify(cv);
 
@@ -3031,14 +3080,14 @@ bool Parser::parseBlockDeclaration(DeclarationAST *&node)
 
   UPDATE_POS(ast, start, token_stream.cursor());
   node = ast;
-
+  char* qs = Parser::tokenText(ast).toLatin1().data();
   return true;
 }
 
 bool Parser::parseNamespaceAliasDefinition(DeclarationAST *&node)
 {
   std::size_t start = token_stream.cursor();
-
+  const char * text = token_stream.token(start).text + token_stream.token(start).position;
   CHECK(Token_namespace);
 
   NamespaceAliasDefinitionAST *ast
@@ -3058,14 +3107,14 @@ bool Parser::parseNamespaceAliasDefinition(DeclarationAST *&node)
 
   UPDATE_POS(ast, start, token_stream.cursor());
   node = ast;
-
+  char* qs = Parser::tokenText(ast).toLatin1().data();
   return true;
 }
 
 bool Parser::parseDeclarationStatement(StatementAST *&node)
 {
   std::size_t start = token_stream.cursor();
-
+  const char * text = token_stream.token(start).text + token_stream.token(start).position;
   DeclarationAST *decl = 0;
   if (!parseBlockDeclaration(decl))
     return false;
@@ -3075,14 +3124,14 @@ bool Parser::parseDeclarationStatement(StatementAST *&node)
 
   UPDATE_POS(ast, start, token_stream.cursor());
   node = ast;
-
+  char* qs = Parser::tokenText(ast).toLatin1().data();
   return true;
 }
 
 bool Parser::parseDeclarationInternal(DeclarationAST *&node)
 {
   std::size_t start = token_stream.cursor();
-
+  const char * text = token_stream.token(start).text + token_stream.token(start).position;
   // that is for the case '__declspec(dllexport) int ...' or
   // '__declspec(dllexport) inline int ...', etc.
   WinDeclSpecAST *winDeclSpec = 0;
@@ -3133,6 +3182,7 @@ bool Parser::parseDeclarationInternal(DeclarationAST *&node)
 
                 UPDATE_POS(ast, start, token_stream.cursor());
                 node = ast;
+				char* qs = Parser::tokenText(ast).toLatin1().data();
               }
               return true;
 
@@ -3154,7 +3204,7 @@ bool Parser::parseDeclarationInternal(DeclarationAST *&node)
 
                     UPDATE_POS(ast, start, token_stream.cursor());
                     node = ast;
-
+					char* qs = Parser::tokenText(ast).toLatin1().data();
                     return true;
                   }
               }
@@ -3175,7 +3225,7 @@ bool Parser::parseDeclarationInternal(DeclarationAST *&node)
 
                     UPDATE_POS(ast, start, token_stream.cursor());
                     node = ast;
-
+					char* qs = Parser::tokenText(ast).toLatin1().data();
                     return true;
                   }
               }
@@ -3218,7 +3268,7 @@ bool Parser::parseDeclarationInternal(DeclarationAST *&node)
 
       UPDATE_POS(ast, start, token_stream.cursor());
       node = ast;
-
+	  char* qs = Parser::tokenText(ast).toLatin1().data();
       return true;
     }
 
@@ -3271,6 +3321,7 @@ bool Parser::parseDeclarationInternal(DeclarationAST *&node)
 
             UPDATE_POS(ast, start, token_stream.cursor());
             node = ast;
+			char* qs = Parser::tokenText(ast).toLatin1().data();
           }
           return true;
 
@@ -3297,7 +3348,7 @@ bool Parser::parseDeclarationInternal(DeclarationAST *&node)
 
                 UPDATE_POS(ast, start, token_stream.cursor());
                 node = ast;
-
+				char* qs = Parser::tokenText(ast).toLatin1().data();
                 return true;
               }
           }
@@ -3389,7 +3440,7 @@ bool Parser::parseTryBlockStatement(StatementAST *&node)
 bool Parser::parsePrimaryExpression(ExpressionAST *&node)
 {
   std::size_t start = token_stream.cursor();
-
+  const char * text = token_stream.token(start).text + token_stream.token(start).position;
   PrimaryExpressionAST *ast = CreateNode<PrimaryExpressionAST>(_M_pool);
 
   switch(token_stream.lookAhead())
@@ -3433,7 +3484,7 @@ bool Parser::parsePrimaryExpression(ExpressionAST *&node)
 
   UPDATE_POS(ast, start, token_stream.cursor());
   node = ast;
-
+  char* qs = Parser::tokenText(ast).toLatin1().data();
   return true;
 }
 
@@ -3450,7 +3501,7 @@ bool Parser::parsePrimaryExpression(ExpressionAST *&node)
 bool Parser::parsePostfixExpressionInternal(ExpressionAST *&node)
 {
   std::size_t start = token_stream.cursor();
-
+  const char * text = token_stream.token(start).text + token_stream.token(start).position;
   switch (token_stream.lookAhead())
     {
     case '[':
@@ -3467,6 +3518,7 @@ bool Parser::parsePostfixExpressionInternal(ExpressionAST *&node)
 
         UPDATE_POS(ast, start, token_stream.cursor());
         node = ast;
+		char* qs = Parser::tokenText(ast).toLatin1().data();
       }
       return true;
 
@@ -3482,6 +3534,7 @@ bool Parser::parsePostfixExpressionInternal(ExpressionAST *&node)
 
         UPDATE_POS(ast, start, token_stream.cursor());
         node = ast;
+		char* qs = Parser::tokenText(ast).toLatin1().data();
       }
       return true;
 
@@ -3520,6 +3573,7 @@ bool Parser::parsePostfixExpressionInternal(ExpressionAST *&node)
 
         UPDATE_POS(ast, start, token_stream.cursor());
         node = ast;
+		char* qs = Parser::tokenText(ast).toLatin1().data();
       }
       return true;
 
@@ -3534,6 +3588,7 @@ bool Parser::parsePostfixExpressionInternal(ExpressionAST *&node)
 
         UPDATE_POS(ast, start, token_stream.cursor());
         node = ast;
+		char* qs = Parser::tokenText(ast).toLatin1().data();
       }
       return true;
 
@@ -3550,7 +3605,7 @@ bool Parser::parsePostfixExpressionInternal(ExpressionAST *&node)
 bool Parser::parsePostfixExpression(ExpressionAST *&node)
 {
   std::size_t start = token_stream.cursor();
-
+  const char * text = token_stream.token(start).text + token_stream.token(start).position;
   switch (token_stream.lookAhead())
     {
     case Token_dynamic_cast:
@@ -3584,6 +3639,7 @@ bool Parser::parsePostfixExpression(ExpressionAST *&node)
 
         UPDATE_POS(ast, start, token_stream.cursor());
         node = ast;
+		char* qs = Parser::tokenText(ast).toLatin1().data();
       }
       return true;
 
@@ -3608,6 +3664,7 @@ bool Parser::parsePostfixExpression(ExpressionAST *&node)
 
         UPDATE_POS(ast, start, token_stream.cursor());
         node = ast;
+		char* qs = Parser::tokenText(ast).toLatin1().data();
       }
       return true;
 
@@ -3623,6 +3680,7 @@ bool Parser::parsePostfixExpression(ExpressionAST *&node)
         TypeIdentificationAST *ast = CreateNode<TypeIdentificationAST>(_M_pool);
         UPDATE_POS(ast, start, token_stream.cursor());
         node = ast;
+		char* qs = Parser::tokenText(ast).toLatin1().data();
       }
       return true;
 
@@ -3695,6 +3753,7 @@ bool Parser::parsePostfixExpression(ExpressionAST *&node)
 
       UPDATE_POS(ast, start, token_stream.cursor());
       node = ast;
+	  char* qs = Parser::tokenText(ast).toLatin1().data();
     }
   else
     node = expr;
@@ -3705,7 +3764,7 @@ bool Parser::parsePostfixExpression(ExpressionAST *&node)
 bool Parser::parseUnaryExpression(ExpressionAST *&node)
 {
   std::size_t start = token_stream.cursor();
-
+  const char * text = token_stream.token(start).text + token_stream.token(start).position;
   switch(token_stream.lookAhead())
     {
     case Token_incr:
@@ -3730,6 +3789,7 @@ bool Parser::parseUnaryExpression(ExpressionAST *&node)
 
         UPDATE_POS(ast, start, token_stream.cursor());
         node = ast;
+		char* qs = Parser::tokenText(ast).toLatin1().data();
       }
       return true;
 
@@ -3751,6 +3811,7 @@ bool Parser::parseUnaryExpression(ExpressionAST *&node)
 
                 UPDATE_POS(ast, start, token_stream.cursor());
                 node = ast;
+				char* qs = Parser::tokenText(ast).toLatin1().data();
                 return true;
               }
 
@@ -3763,6 +3824,7 @@ bool Parser::parseUnaryExpression(ExpressionAST *&node)
 
         UPDATE_POS(ast, start, token_stream.cursor());
         node = ast;
+		char* qs = Parser::tokenText(ast).toLatin1().data();
         return true;
       }
 
@@ -3786,7 +3848,7 @@ bool Parser::parseUnaryExpression(ExpressionAST *&node)
 bool Parser::parseNewExpression(ExpressionAST *&node)
 {
   std::size_t start = token_stream.cursor();
-
+  const char * text = token_stream.token(start).text + token_stream.token(start).position;
   NewExpressionAST *ast = CreateNode<NewExpressionAST>(_M_pool);
 
   if (token_stream.lookAhead() == Token_scope
@@ -3821,14 +3883,14 @@ bool Parser::parseNewExpression(ExpressionAST *&node)
 
   UPDATE_POS(ast, start, token_stream.cursor());
   node = ast;
-
+  char* qs = Parser::tokenText(ast).toLatin1().data();
   return true;
 }
 
 bool Parser::parseNewTypeId(NewTypeIdAST *&node)
 {
   std::size_t start = token_stream.cursor();
-
+  const char * text = token_stream.token(start).text + token_stream.token(start).position;
   TypeSpecifierAST *typeSpec = 0;
   if (!parseTypeSpecifier(typeSpec))
     return false;
@@ -3840,14 +3902,14 @@ bool Parser::parseNewTypeId(NewTypeIdAST *&node)
 
   UPDATE_POS(ast, start, token_stream.cursor());
   node = ast;
-
+  char* qs = Parser::tokenText(ast).toLatin1().data();
   return true;
 }
 
 bool Parser::parseNewDeclarator(NewDeclaratorAST *&node)
 {
   std::size_t start = token_stream.cursor();
-
+  const char * text = token_stream.token(start).text + token_stream.token(start).position;
   NewDeclaratorAST *ast = CreateNode<NewDeclaratorAST>(_M_pool);
 
   PtrOperatorAST *ptrOp = 0;
@@ -3868,14 +3930,14 @@ bool Parser::parseNewDeclarator(NewDeclaratorAST *&node)
 
   UPDATE_POS(ast, start, token_stream.cursor());
   node = ast;
-
+  char* qs = Parser::tokenText(ast).toLatin1().data();
   return true;
 }
 
 bool Parser::parseNewInitializer(NewInitializerAST *&node)
 {
   std::size_t start = token_stream.cursor();
-
+  const char * text = token_stream.token(start).text + token_stream.token(start).position;
   CHECK('(');
 
   NewInitializerAST *ast = CreateNode<NewInitializerAST>(_M_pool);
@@ -3886,14 +3948,14 @@ bool Parser::parseNewInitializer(NewInitializerAST *&node)
 
   UPDATE_POS(ast, start, token_stream.cursor());
   node = ast;
-
+  char* qs = Parser::tokenText(ast).toLatin1().data();
   return true;
 }
 
 bool Parser::parseDeleteExpression(ExpressionAST *&node)
 {
   std::size_t start = token_stream.cursor();
-
+  const char * text = token_stream.token(start).text + token_stream.token(start).position;
   DeleteExpressionAST *ast = CreateNode<DeleteExpressionAST>(_M_pool);
 
   if (token_stream.lookAhead() == Token_scope
@@ -3919,14 +3981,14 @@ bool Parser::parseDeleteExpression(ExpressionAST *&node)
 
   UPDATE_POS(ast, start, token_stream.cursor());
   node = ast;
-
+  char* qs = Parser::tokenText(ast).toLatin1().data();
   return true;
 }
 
 bool Parser::parseCastExpression(ExpressionAST *&node)
 {
   std::size_t start = token_stream.cursor();
-
+  const char * text = token_stream.token(start).text + token_stream.token(start).position;
   if (token_stream.lookAhead() == '(')
     {
       token_stream.nextToken();
@@ -3943,7 +4005,7 @@ bool Parser::parseCastExpression(ExpressionAST *&node)
                 {
                   UPDATE_POS(ast, start, token_stream.cursor());
                   node = ast;
-
+				  char* qs = Parser::tokenText(ast).toLatin1().data();
                   return true;
                 }
             }
@@ -3957,7 +4019,7 @@ bool Parser::parseCastExpression(ExpressionAST *&node)
 bool Parser::parsePmExpression(ExpressionAST *&node)
 {
   std::size_t start = token_stream.cursor();
-
+  const char * text = token_stream.token(start).text + token_stream.token(start).position;
   if (!parseCastExpression(node) || !node) // ### fixme
     return false;
 
@@ -3977,6 +4039,7 @@ bool Parser::parsePmExpression(ExpressionAST *&node)
 
       UPDATE_POS(ast, start, token_stream.cursor());
       node = ast;
+	  char* qs = Parser::tokenText(ast).toLatin1().data();
     }
 
   return true;
@@ -3985,7 +4048,7 @@ bool Parser::parsePmExpression(ExpressionAST *&node)
 bool Parser::parseMultiplicativeExpression(ExpressionAST *&node)
 {
   std::size_t start = token_stream.cursor();
-
+  const char * text = token_stream.token(start).text + token_stream.token(start).position;
   if (!parsePmExpression(node))
     return false;
 
@@ -4007,6 +4070,7 @@ bool Parser::parseMultiplicativeExpression(ExpressionAST *&node)
 
       UPDATE_POS(ast, start, token_stream.cursor());
       node = ast;
+	  char* qs = Parser::tokenText(ast).toLatin1().data();
     }
 
   return true;
@@ -4016,7 +4080,7 @@ bool Parser::parseMultiplicativeExpression(ExpressionAST *&node)
 bool Parser::parseAdditiveExpression(ExpressionAST *&node)
 {
   std::size_t start = token_stream.cursor();
-
+  const char * text = token_stream.token(start).text + token_stream.token(start).position;
   if (!parseMultiplicativeExpression(node))
     return false;
 
@@ -4036,6 +4100,7 @@ bool Parser::parseAdditiveExpression(ExpressionAST *&node)
 
       UPDATE_POS(ast, start, token_stream.cursor());
       node = ast;
+	  char* qs = Parser::tokenText(ast).toLatin1().data();
     }
 
   return true;
@@ -4044,7 +4109,7 @@ bool Parser::parseAdditiveExpression(ExpressionAST *&node)
 bool Parser::parseShiftExpression(ExpressionAST *&node)
 {
   std::size_t start = token_stream.cursor();
-
+  const char * text = token_stream.token(start).text + token_stream.token(start).position;
   if (!parseAdditiveExpression(node))
     return false;
 
@@ -4064,6 +4129,7 @@ bool Parser::parseShiftExpression(ExpressionAST *&node)
 
       UPDATE_POS(ast, start, token_stream.cursor());
       node = ast;
+	  char* qs = Parser::tokenText(ast).toLatin1().data();
     }
 
   return true;
@@ -4072,7 +4138,7 @@ bool Parser::parseShiftExpression(ExpressionAST *&node)
 bool Parser::parseRelationalExpression(ExpressionAST *&node, bool templArgs)
 {
   std::size_t start = token_stream.cursor();
-
+  const char * text = token_stream.token(start).text + token_stream.token(start).position;
   if (!parseShiftExpression(node))
     return false;
 
@@ -4095,6 +4161,7 @@ bool Parser::parseRelationalExpression(ExpressionAST *&node, bool templArgs)
 
       UPDATE_POS(ast, start, token_stream.cursor());
       node = ast;
+	  char* qs = Parser::tokenText(ast).toLatin1().data();
     }
 
   return true;
@@ -4103,7 +4170,7 @@ bool Parser::parseRelationalExpression(ExpressionAST *&node, bool templArgs)
 bool Parser::parseEqualityExpression(ExpressionAST *&node, bool templArgs)
 {
   std::size_t start = token_stream.cursor();
-
+  const char * text = token_stream.token(start).text + token_stream.token(start).position;
   if (!parseRelationalExpression(node, templArgs))
     return false;
 
@@ -4124,6 +4191,7 @@ bool Parser::parseEqualityExpression(ExpressionAST *&node, bool templArgs)
 
       UPDATE_POS(ast, start, token_stream.cursor());
       node = ast;
+	  char* qs = Parser::tokenText(ast).toLatin1().data();
     }
 
   return true;
@@ -4132,7 +4200,7 @@ bool Parser::parseEqualityExpression(ExpressionAST *&node, bool templArgs)
 bool Parser::parseAndExpression(ExpressionAST *&node, bool templArgs)
 {
   std::size_t start = token_stream.cursor();
-
+  const char * text = token_stream.token(start).text + token_stream.token(start).position;
   if (!parseEqualityExpression(node, templArgs))
     return false;
 
@@ -4152,6 +4220,7 @@ bool Parser::parseAndExpression(ExpressionAST *&node, bool templArgs)
 
       UPDATE_POS(ast, start, token_stream.cursor());
       node = ast;
+	  char* qs = Parser::tokenText(ast).toLatin1().data();
     }
 
   return true;
@@ -4160,7 +4229,7 @@ bool Parser::parseAndExpression(ExpressionAST *&node, bool templArgs)
 bool Parser::parseExclusiveOrExpression(ExpressionAST *&node, bool templArgs)
 {
   std::size_t start = token_stream.cursor();
-
+  const char * text = token_stream.token(start).text + token_stream.token(start).position;
   if (!parseAndExpression(node, templArgs))
     return false;
 
@@ -4180,6 +4249,7 @@ bool Parser::parseExclusiveOrExpression(ExpressionAST *&node, bool templArgs)
 
       UPDATE_POS(ast, start, token_stream.cursor());
       node = ast;
+	  char* qs = Parser::tokenText(ast).toLatin1().data();
     }
 
   return true;
@@ -4188,7 +4258,7 @@ bool Parser::parseExclusiveOrExpression(ExpressionAST *&node, bool templArgs)
 bool Parser::parseInclusiveOrExpression(ExpressionAST *&node, bool templArgs)
 {
   std::size_t start = token_stream.cursor();
-
+  const char * text = token_stream.token(start).text + token_stream.token(start).position;
   if (!parseExclusiveOrExpression(node, templArgs))
     return false;
 
@@ -4208,6 +4278,7 @@ bool Parser::parseInclusiveOrExpression(ExpressionAST *&node, bool templArgs)
 
       UPDATE_POS(ast, start, token_stream.cursor());
       node = ast;
+	  char* qs = Parser::tokenText(ast).toLatin1().data();
     }
 
   return true;
@@ -4216,7 +4287,7 @@ bool Parser::parseInclusiveOrExpression(ExpressionAST *&node, bool templArgs)
 bool Parser::parseLogicalAndExpression(ExpressionAST *&node, bool templArgs)
 {
   std::size_t start = token_stream.cursor();
-
+  const char * text = token_stream.token(start).text + token_stream.token(start).position;
   if (!parseInclusiveOrExpression(node, templArgs))
     return false;
 
@@ -4236,6 +4307,7 @@ bool Parser::parseLogicalAndExpression(ExpressionAST *&node, bool templArgs)
 
       UPDATE_POS(ast, start, token_stream.cursor());
       node = ast;
+	  char* qs = Parser::tokenText(ast).toLatin1().data();
     }
 
   return true;
@@ -4244,7 +4316,7 @@ bool Parser::parseLogicalAndExpression(ExpressionAST *&node, bool templArgs)
 bool Parser::parseLogicalOrExpression(ExpressionAST *&node, bool templArgs)
 {
   std::size_t start = token_stream.cursor();
-
+  const char * text = token_stream.token(start).text + token_stream.token(start).position;
   if (!parseLogicalAndExpression(node, templArgs))
     return false;
 
@@ -4264,6 +4336,7 @@ bool Parser::parseLogicalOrExpression(ExpressionAST *&node, bool templArgs)
 
       UPDATE_POS(ast, start, token_stream.cursor());
       node = ast;
+	  char* qs = Parser::tokenText(ast).toLatin1().data();
     }
 
   return true;
@@ -4272,7 +4345,7 @@ bool Parser::parseLogicalOrExpression(ExpressionAST *&node, bool templArgs)
 bool Parser::parseConditionalExpression(ExpressionAST *&node)
 {
   std::size_t start = token_stream.cursor();
-
+  const char * text = token_stream.token(start).text + token_stream.token(start).position;
   if (!parseLogicalOrExpression(node))
     return false;
 
@@ -4299,6 +4372,7 @@ bool Parser::parseConditionalExpression(ExpressionAST *&node)
 
       UPDATE_POS(ast, start, token_stream.cursor());
       node = ast;
+	  char* qs = Parser::tokenText(ast).toLatin1().data();
     }
 
   return true;
@@ -4307,7 +4381,7 @@ bool Parser::parseConditionalExpression(ExpressionAST *&node)
 bool Parser::parseAssignmentExpression(ExpressionAST *&node)
 {
   std::size_t start = token_stream.cursor();
-
+  const char * text = token_stream.token(start).text + token_stream.token(start).position;
   if (token_stream.lookAhead() == Token_throw && !parseThrowExpression(node))
     return false;
   else if (!parseConditionalExpression(node))
@@ -4330,6 +4404,7 @@ bool Parser::parseAssignmentExpression(ExpressionAST *&node)
 
       UPDATE_POS(ast, start, token_stream.cursor());
       node = ast;
+	  char* qs = Parser::tokenText(ast).toLatin1().data();
     }
 
   return true;
@@ -4348,7 +4423,7 @@ bool Parser::parseExpression(ExpressionAST *&node)
 bool Parser::parseCommaExpression(ExpressionAST *&node)
 {
   std::size_t start = token_stream.cursor();
-
+  const char * text = token_stream.token(start).text + token_stream.token(start).position;
   if (!parseAssignmentExpression(node))
     return false;
 
@@ -4368,6 +4443,7 @@ bool Parser::parseCommaExpression(ExpressionAST *&node)
 
       UPDATE_POS(ast, start, token_stream.cursor());
       node = ast;
+	  char* qs = Parser::tokenText(ast).toLatin1().data();
     }
 
   return true;
@@ -4376,7 +4452,7 @@ bool Parser::parseCommaExpression(ExpressionAST *&node)
 bool Parser::parseThrowExpression(ExpressionAST *&node)
 {
   std::size_t start = token_stream.cursor();
-
+  const char * text = token_stream.token(start).text + token_stream.token(start).position;
   CHECK(Token_throw);
 
   ThrowExpressionAST *ast = CreateNode<ThrowExpressionAST>(_M_pool);
@@ -4386,7 +4462,7 @@ bool Parser::parseThrowExpression(ExpressionAST *&node)
 
   UPDATE_POS(ast, start, token_stream.cursor());
   node = ast;
-
+  char* qs = Parser::tokenText(ast).toLatin1().data();
   return true;
 }
 
@@ -4408,7 +4484,7 @@ bool Parser::parseQ_ENUMS(DeclarationAST *&node)
   QEnumsAST *ast = CreateNode<QEnumsAST>(_M_pool);
   UPDATE_POS(ast, firstToken, token_stream.cursor());
   node = ast;
-
+  char* qs = Parser::tokenText(ast).toLatin1().data();
   token_stream.nextToken();
 
   return true;
@@ -4432,7 +4508,7 @@ bool Parser::parseQ_PROPERTY(DeclarationAST *&node)
   QPropertyAST *ast = CreateNode<QPropertyAST>(_M_pool);
   UPDATE_POS(ast, firstToken, token_stream.cursor());
   node = ast;
-
+  char* qs = Parser::tokenText(ast).toLatin1().data();
 //   const Token &t1 = token_stream[firstToken];
 //   const Token &t2 = token_stream[token_stream.cursor()];
 //   printf("property: %s\n",

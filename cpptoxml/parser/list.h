@@ -28,6 +28,7 @@
 
 #include "smallobject.h"
 
+//ListNode是循环链表，index从小到大，index最大的是表尾
 template <typename Tp>
 struct ListNode
 {
@@ -93,7 +94,7 @@ inline const ListNode<Tp> *snoc(const ListNode<Tp> *list,
   if (!list)
     return ListNode<Tp>::create(element, p);
 
-  return ListNode<Tp>::create(list->toBack(), element, p);
+  return ListNode<Tp>::create(list->toBack(), element, p);  //返回的是链表尾
 }
 
 #endif // FASTLIST_H

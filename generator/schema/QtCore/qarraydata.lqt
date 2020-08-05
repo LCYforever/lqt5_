@@ -347,21 +347,21 @@ struct QArrayDataPointerRef
 // The fallback macro does NOT use variadic macros and does NOT support
 // variable number of arguments. It is suitable for char arrays.
 
-// namespace QtPrivate {
-//     template <class T, size_t N>
-//     inline QArrayDataPointerRef<T> qMakeArrayLiteral(const T (&array)[N])
-//     {
-//         union { T type_must_be_POD; } dummy; Q_UNUSED(dummy)
+namespace QtPrivate {
+    template <class T, size_t N>
+    inline QArrayDataPointerRef<T> qMakeArrayLiteral(const T (&array)[N])
+    {
+        union { T type_must_be_POD; } dummy; Q_UNUSED(dummy)
 
-//         QArrayDataPointerRef<T> result = { QTypedArrayData<T>::allocate(N) };
-//         Q_CHECK_PTR(result.ptr);
+        QArrayDataPointerRef<T> result = { QTypedArrayData<T>::allocate(N) };
+        Q_CHECK_PTR(result.ptr);
 
-//         ::memcpy(result.ptr->data(), array, N * sizeof(T));
-//         result.ptr->size = N;
+        ::memcpy(result.ptr->data(), array, N * sizeof(T));
+        result.ptr->size = N;
 
-//         return result;
-//     }
-// }
+        return result;
+    }
+}
 
 #define Q_ARRAY_LITERAL(Type, Array) \
     QT_PREPEND_NAMESPACE(QtPrivate::qMakeArrayLiteral)<Type>( Array )

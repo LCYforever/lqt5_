@@ -50,7 +50,9 @@ class QFileDevicePrivate;
 
 class Q_CORE_EXPORT QFileDevice : public QIODevice
 {
-    LQT_OBJECT Q_OBJECT
+#ifndef QT_NO_QOBJECT
+    LQT_OBJECT O_OBJECT
+#endif
     Q_DECLARE_PRIVATE(QFileDevice)
 
 public:
@@ -98,7 +100,7 @@ public:
     FileError error() const;
     void unsetError();
 
-    virtual void close() override;
+    void close() override;
 
     bool isSequential() const override;
 
@@ -130,8 +132,12 @@ public:
 
 protected:
     QFileDevice();
+#ifdef QT_NO_QOBJECT
+    QFileDevice(QFileDevicePrivate &dd);
+#else
     explicit QFileDevice(QObject *parent);
     QFileDevice(QFileDevicePrivate &dd, QObject *parent = nullptr);
+#endif
 
     qint64 readData(char *data, qint64 maxlen) override;
     qint64 writeData(const char *data, qint64 len) override;

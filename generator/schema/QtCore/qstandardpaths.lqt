@@ -46,7 +46,7 @@
 QT_BEGIN_NAMESPACE
 
 
-// #ifndef QT_NO_STANDARDPATHS
+#ifndef QT_NO_STANDARDPATHS
 
 class Q_CORE_EXPORT QStandardPaths
 {
@@ -90,9 +90,9 @@ public:
 
     static QString locate(StandardLocation type, const QString &fileName, LocateOptions options = LocateFile);
     static QStringList locateAll(StandardLocation type, const QString &fileName, LocateOptions options = LocateFile);
-// #ifndef QT_BOOTSTRAPPED
+#ifndef QT_BOOTSTRAPPED
     static QString displayName(StandardLocation type);
-// #endif
+#endif
 
     static QString findExecutable(const QString &executableName, const QStringList &paths = QStringList());
 
@@ -110,7 +110,7 @@ private:
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QStandardPaths::LocateOptions)
 
-// #endif // QT_NO_STANDARDPATHS
+#endif // QT_NO_STANDARDPATHS
 
 QT_END_NAMESPACE
 

@@ -52,7 +52,6 @@ QT_BEGIN_NAMESPACE
 /*
   Forward declarations only.
 
-  In order to use the qDebug() stream, you must #include<QDebug>
 */
 class QDebug;
 class QNoDebug;
@@ -68,7 +67,7 @@ public:
     Q_DECL_CONSTEXPR QMessageLogContext(const char *fileName, int lineNumber, const char *functionName, const char *categoryName)
         : version(2), line(lineNumber), file(fileName), function(functionName), category(categoryName) {}
 
-    // void copy(const QMessageLogContext &logContext);
+    void copy(const QMessageLogContext &logContext);
 
     int version;
     int line;
@@ -153,9 +152,9 @@ private:
 #endif
 
 #ifdef QT_MESSAGELOGCONTEXT
-  #define QT_MESSAGELOG_FILE __FILE__
+  #define QT_MESSAGELOG_FILE static_cast<const char *>(__FILE__)
   #define QT_MESSAGELOG_LINE __LINE__
-  #define QT_MESSAGELOG_FUNC Q_FUNC_INFO
+  #define QT_MESSAGELOG_FUNC static_cast<const char *>(Q_FUNC_INFO)
 #else
   #define QT_MESSAGELOG_FILE nullptr
   #define QT_MESSAGELOG_LINE 0

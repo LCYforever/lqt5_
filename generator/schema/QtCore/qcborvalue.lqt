@@ -43,7 +43,9 @@
 #include <QtCore/qbytearray.lqt>
 #include <QtCore/qdatetime.lqt>
 #include <QtCore/qcborcommon.lqt>
-#include <QtCore/qregularexpression.lqt>
+#if QT_CONFIG(regularexpression)
+#  include <QtCore/qregularexpression.lqt>
+#endif
 #include <QtCore/qstring.lqt>
 #include <QtCore/qstringview.lqt>
 #include <QtCore/qurl.lqt>
@@ -58,7 +60,6 @@
 #endif
 
 #if 0 && QT_HAS_INCLUDE(<compare>)
-#  include <compare>
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -67,15 +68,17 @@ class QCborArray;
 class QCborMap;
 class QCborStreamReader;
 class QCborStreamWriter;
+class QDataStream;
 
 struct QCborParserError
 {
     qint64 offset = 0;
-    QCborError error = {};
+    QCborError error = { QCborError::NoError };
 
     QString errorString() const { return error.toString(); }
 };
 
+class QCborValueRef;
 class QCborContainerPrivate;
 class Q_CORE_EXPORT QCborValue
 {
@@ -99,7 +102,7 @@ public:
     Q_DECLARE_FLAGS(DiagnosticNotationOptions, DiagnosticNotationOption)
 
     // different from QCborStreamReader::Type because we have more types
-    enum Type {
+    enum Type : int {
         Integer         = 0x00,
         ByteArray       = 0x40,
         String          = 0x60,
@@ -155,13 +158,15 @@ public:
 
     explicit QCborValue(const QDateTime &dt);
     explicit QCborValue(const QUrl &url);
+#if QT_CONFIG(regularexpression)
     explicit QCborValue(const QRegularExpression &rx);
+#endif
     explicit QCborValue(const QUuid &uuid);
 
     ~QCborValue() { if (container) dispose(); }
 
     // make sure const char* doesn't go call the bool constructor
-    // QCborValue(const void *) = delete;
+    QCborValue(const void *) = delete;
 
     QCborValue(const QCborValue &other);
     QCborValue(QCborValue &&other) noexcept
@@ -229,27 +234,27 @@ public:
     QCborTag tag(QCborTag defaultValue = QCborTag(-1)) const;
     QCborValue taggedValue(const QCborValue &defaultValue = QCborValue()) const;
 
-    QByteArray toByteArray(const QByteArray &defaultValue = QByteArray()) const;
-    QString toString(const QString &defaultValue = QString()) const;
-    QDateTime toDateTime(const QDateTime &defaultValue = QDateTime()) const;
-    QUrl toUrl(const QUrl &defaultValue = QUrl()) const;
-    QRegularExpression toRegularExpression(const QRegularExpression &defaultValue = QRegularExpression()) const;
-    QUuid toUuid(const QUuid &defaultValue = QUuid()) const;
+    QByteArray toByteArray(const QByteArray &defaultValue = {}) const;
+    QString toString(const QString &defaultValue = {}) const;
+    QDateTime toDateTime(const QDateTime &defaultValue = {}) const;
+    QUrl toUrl(const QUrl &defaultValue = {}) const;
+#if QT_CONFIG(regularexpression)
+    QRegularExpression toRegularExpression(const QRegularExpression &defaultValue = {}) const;
+#endif
+    QUuid toUuid(const QUuid &defaultValue = {}) const;
 
-#ifdef Q_QDOC
-    QCborArray toArray(const QCborArray &a = {}) const;
-    QCborMap toMap(const QCborMap &m = {}) const;
-#else
     // only forward-declared, need split functions
     QCborArray toArray() const;
     QCborArray toArray(const QCborArray &defaultValue) const;
     QCborMap toMap() const;
     QCborMap toMap(const QCborMap &defaultValue) const;
-#endif
 
     const QCborValue operator[](const QString &key) const;
     const QCborValue operator[](QLatin1String key) const;
     const QCborValue operator[](qint64 key) const;
+    QCborValueRef operator[](qint64 key);
+    QCborValueRef operator[](QLatin1String key);
+    QCborValueRef operator[](const QString & key);
 
     int compare(const QCborValue &other) const;
 #if 0 && QT_HAS_INCLUDE(<compare>)
@@ -323,12 +328,12 @@ class Q_CORE_EXPORT QCborValueRef
 public:
     operator QCborValue() const     { return concrete(); }
 
-    QCborValueRef(const QCborValueRef &) noexcept;
-    // QCborValueRef(QCborValueRef &&) noexcept = default;
+    QCborValueRef(const QCborValueRef &) noexcept = default;
+    QCborValueRef(QCborValueRef &&) noexcept = default;
     QCborValueRef &operator=(const QCborValue &other)
     { assign(*this, other); return *this; }
-    // QCborValueRef &operator=(QCborValue &&other)
-    // { assign(*this, std::move(other)); other.container = nullptr; return *this; }
+    QCborValueRef &operator=(QCborValue &&other)
+    { assign(*this, std::move(other)); other.container = nullptr; return *this; }
     QCborValueRef &operator=(const QCborValueRef &other)
     { assign(*this, other); return *this; }
 
@@ -372,29 +377,33 @@ public:
     double toDouble(double defaultValue = 0) const
     { return concrete().toDouble(defaultValue); }
 
-    QByteArray toByteArray(const QByteArray &defaultValue = QByteArray()) const
+    QByteArray toByteArray(const QByteArray &defaultValue = {}) const
     { return concrete().toByteArray(defaultValue); }
-    QString toString(const QString &defaultValue = QString()) const
+    QString toString(const QString &defaultValue = {}) const
     { return concrete().toString(defaultValue); }
-    QDateTime toDateTime(const QDateTime &defaultValue = QDateTime()) const
+    QDateTime toDateTime(const QDateTime &defaultValue = {}) const
     { return concrete().toDateTime(defaultValue); }
-    QUrl toUrl(const QUrl &defaultValue = QUrl()) const
+    QUrl toUrl(const QUrl &defaultValue = {}) const
     { return concrete().toUrl(defaultValue); }
-    QRegularExpression toRegularExpression(const QRegularExpression &defaultValue = QRegularExpression()) const
+#if QT_CONFIG(regularexpression)
+    QRegularExpression toRegularExpression(const QRegularExpression &defaultValue = {}) const
     { return concrete().toRegularExpression(defaultValue); }
-    QUuid toUuid(const QUuid &defaultValue = QUuid()) const
+#endif
+    QUuid toUuid(const QUuid &defaultValue = {}) const
     { return concrete().toUuid(defaultValue); }
 
-#ifdef Q_QDOC
-    QCborArray toArray(const QCborArray &a = {}) const;
-    QCborMap toMap(const QCborMap &m = {}) const;
-#else
     // only forward-declared, need split functions. Implemented in qcbor{array,map}.h
     QCborArray toArray() const;
     QCborArray toArray(const QCborArray &a) const;
     QCborMap toMap() const;
     QCborMap toMap(const QCborMap &m) const;
-#endif
+
+    const QCborValue operator[](const QString &key) const;
+    const QCborValue operator[](QLatin1String key) const;
+    const QCborValue operator[](qint64 key) const;
+    QCborValueRef operator[](qint64 key);
+    QCborValueRef operator[](QLatin1String key);
+    QCborValueRef operator[](const QString & key);
 
     int compare(const QCborValue &other) const
     { return concrete().compare(other); }
@@ -426,6 +435,7 @@ public:
     { return concrete().toDiagnosticNotation(opt); }
 
 private:
+    friend class QCborValue;
     friend class QCborArray;
     friend class QCborMap;
     friend class QCborContainerPrivate;
@@ -433,7 +443,7 @@ private:
 
     // static so we can pass this by value
     static void assign(QCborValueRef that, const QCborValue &other);
-    // static void assign(QCborValueRef that, QCborValue &&other);
+    static void assign(QCborValueRef that, QCborValue &&other);
     static void assign(QCborValueRef that, const QCborValueRef other);
     static QCborValue concrete(QCborValueRef that) noexcept;
     QCborValue concrete() const noexcept  { return concrete(*this); }
@@ -455,6 +465,11 @@ Q_CORE_EXPORT uint qHash(const QCborValue &value, uint seed = 0);
 
 #if !defined(QT_NO_DEBUG_STREAM)
 Q_CORE_EXPORT QDebug operator<<(QDebug, const QCborValue &v);
+#endif
+
+#ifndef QT_NO_DATASTREAM
+Q_CORE_EXPORT QDataStream &operator<<(QDataStream &, const QCborValue &);
+Q_CORE_EXPORT QDataStream &operator>>(QDataStream &, QCborValue &);
 #endif
 
 QT_END_NAMESPACE

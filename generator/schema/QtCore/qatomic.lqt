@@ -47,8 +47,8 @@
 
 QT_BEGIN_NAMESPACE
 
-// QT_WARNING_PUSH
-// QT_WARNING_DISABLE_GCC("-Wextra")
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_GCC("-Wextra")
 
 // High-level atomic integer operations
 template <typename T>
@@ -56,19 +56,19 @@ class QAtomicInteger : public QBasicAtomicInteger<T>
 {
 public:
     // Non-atomic API
-// #ifdef QT_BASIC_ATOMIC_HAS_CONSTRUCTORS
-//     constexpr QAtomicInteger(T value = 0) Q_DECL_NOTHROW : QBasicAtomicInteger<T>(value) {}
-// #else
+#ifdef QT_BASIC_ATOMIC_HAS_CONSTRUCTORS
+    constexpr QAtomicInteger(T value = 0) Q_DECL_NOTHROW : QBasicAtomicInteger<T>(value) {}
+#else
     inline QAtomicInteger(T value = 0) Q_DECL_NOTHROW
     {
         this->_q_value = value;
     }
-// #endif
+#endif
 
     inline QAtomicInteger(const QAtomicInteger &other) Q_DECL_NOTHROW
-// #ifdef QT_BASIC_ATOMIC_HAS_CONSTRUCTORS
-//         : QBasicAtomicInteger<T>()
-// #endif
+#ifdef QT_BASIC_ATOMIC_HAS_CONSTRUCTORS
+        : QBasicAtomicInteger<T>()
+#endif
     {
         this->storeRelease(other.loadAcquire());
     }
@@ -79,75 +79,75 @@ public:
         return *this;
     }
 
-// #ifdef Q_CLANG_QDOC
-//     T load() const;
-//     T loadAcquire() const;
-//     void store(T newValue);
-//     void storeRelease(T newValue);
+#ifdef Q_CLANG_QDOC
+    T load() const;
+    T loadAcquire() const;
+    void store(T newValue);
+    void storeRelease(T newValue);
 
-//     operator T() const;
-//     QAtomicInteger &operator=(T);
+    operator T() const;
+    QAtomicInteger &operator=(T);
 
-//     static Q_DECL_CONSTEXPR bool isReferenceCountingNative();
-//     static Q_DECL_CONSTEXPR bool isReferenceCountingWaitFree();
+    static Q_DECL_CONSTEXPR bool isReferenceCountingNative();
+    static Q_DECL_CONSTEXPR bool isReferenceCountingWaitFree();
 
-//     bool ref();
-//     bool deref();
+    bool ref();
+    bool deref();
 
-//     static Q_DECL_CONSTEXPR bool isTestAndSetNative();
-//     static Q_DECL_CONSTEXPR bool isTestAndSetWaitFree();
+    static Q_DECL_CONSTEXPR bool isTestAndSetNative();
+    static Q_DECL_CONSTEXPR bool isTestAndSetWaitFree();
 
-//     bool testAndSetRelaxed(T expectedValue, T newValue);
-//     bool testAndSetAcquire(T expectedValue, T newValue);
-//     bool testAndSetRelease(T expectedValue, T newValue);
-//     bool testAndSetOrdered(T expectedValue, T newValue);
+    bool testAndSetRelaxed(T expectedValue, T newValue);
+    bool testAndSetAcquire(T expectedValue, T newValue);
+    bool testAndSetRelease(T expectedValue, T newValue);
+    bool testAndSetOrdered(T expectedValue, T newValue);
 
-//     static Q_DECL_CONSTEXPR bool isFetchAndStoreNative();
-//     static Q_DECL_CONSTEXPR bool isFetchAndStoreWaitFree();
+    static Q_DECL_CONSTEXPR bool isFetchAndStoreNative();
+    static Q_DECL_CONSTEXPR bool isFetchAndStoreWaitFree();
 
-//     T fetchAndStoreRelaxed(T newValue);
-//     T fetchAndStoreAcquire(T newValue);
-//     T fetchAndStoreRelease(T newValue);
-//     T fetchAndStoreOrdered(T newValue);
+    T fetchAndStoreRelaxed(T newValue);
+    T fetchAndStoreAcquire(T newValue);
+    T fetchAndStoreRelease(T newValue);
+    T fetchAndStoreOrdered(T newValue);
 
-//     static Q_DECL_CONSTEXPR bool isFetchAndAddNative();
-//     static Q_DECL_CONSTEXPR bool isFetchAndAddWaitFree();
+    static Q_DECL_CONSTEXPR bool isFetchAndAddNative();
+    static Q_DECL_CONSTEXPR bool isFetchAndAddWaitFree();
 
-//     T fetchAndAddRelaxed(T valueToAdd);
-//     T fetchAndAddAcquire(T valueToAdd);
-//     T fetchAndAddRelease(T valueToAdd);
-//     T fetchAndAddOrdered(T valueToAdd);
+    T fetchAndAddRelaxed(T valueToAdd);
+    T fetchAndAddAcquire(T valueToAdd);
+    T fetchAndAddRelease(T valueToAdd);
+    T fetchAndAddOrdered(T valueToAdd);
 
-//     T fetchAndSubRelaxed(T valueToSub);
-//     T fetchAndSubAcquire(T valueToSub);
-//     T fetchAndSubRelease(T valueToSub);
-//     T fetchAndSubOrdered(T valueToSub);
+    T fetchAndSubRelaxed(T valueToSub);
+    T fetchAndSubAcquire(T valueToSub);
+    T fetchAndSubRelease(T valueToSub);
+    T fetchAndSubOrdered(T valueToSub);
 
-//     T fetchAndOrRelaxed(T valueToOr);
-//     T fetchAndOrAcquire(T valueToOr);
-//     T fetchAndOrRelease(T valueToOr);
-//     T fetchAndOrOrdered(T valueToOr);
+    T fetchAndOrRelaxed(T valueToOr);
+    T fetchAndOrAcquire(T valueToOr);
+    T fetchAndOrRelease(T valueToOr);
+    T fetchAndOrOrdered(T valueToOr);
 
-//     T fetchAndAndRelaxed(T valueToAnd);
-//     T fetchAndAndAcquire(T valueToAnd);
-//     T fetchAndAndRelease(T valueToAnd);
-//     T fetchAndAndOrdered(T valueToAnd);
+    T fetchAndAndRelaxed(T valueToAnd);
+    T fetchAndAndAcquire(T valueToAnd);
+    T fetchAndAndRelease(T valueToAnd);
+    T fetchAndAndOrdered(T valueToAnd);
 
-//     T fetchAndXorRelaxed(T valueToXor);
-//     T fetchAndXorAcquire(T valueToXor);
-//     T fetchAndXorRelease(T valueToXor);
-//     T fetchAndXorOrdered(T valueToXor);
+    T fetchAndXorRelaxed(T valueToXor);
+    T fetchAndXorAcquire(T valueToXor);
+    T fetchAndXorRelease(T valueToXor);
+    T fetchAndXorOrdered(T valueToXor);
 
-//     T operator++();
-//     T operator++(int);
-//     T operator--();
-//     T operator--(int);
-//     T operator+=(T value);
-//     T operator-=(T value);
-//     T operator|=(T value);
-//     T operator&=(T value);
-//     T operator^=(T value);
-// #endif
+    T operator++();
+    T operator++(int);
+    T operator--();
+    T operator--(int);
+    T operator+=(T value);
+    T operator-=(T value);
+    T operator|=(T value);
+    T operator&=(T value);
+    T operator^=(T value);
+#endif
 };
 
 class QAtomicInt : public QAtomicInteger<int>
@@ -156,9 +156,9 @@ public:
     // Non-atomic API
     // We could use QT_COMPILER_INHERITING_CONSTRUCTORS, but we need only one;
     // the implicit definition for all the others is fine.
-// #ifdef QT_BASIC_ATOMIC_HAS_CONSTRUCTORS
-//    constexpr
-// #endif
+#ifdef QT_BASIC_ATOMIC_HAS_CONSTRUCTORS
+    constexpr
+#endif
     QAtomicInt(int value = 0) Q_DECL_NOTHROW : QAtomicInteger<int>(value) {}
 };
 
@@ -167,14 +167,14 @@ template <typename T>
 class QAtomicPointer : public QBasicAtomicPointer<T>
 {
 public:
-// #ifdef QT_BASIC_ATOMIC_HAS_CONSTRUCTORS
-//     constexpr QAtomicPointer(T *value = nullptr) Q_DECL_NOTHROW : QBasicAtomicPointer<T>(value) {}
-// #else
+#ifdef QT_BASIC_ATOMIC_HAS_CONSTRUCTORS
+    constexpr QAtomicPointer(T *value = nullptr) Q_DECL_NOTHROW : QBasicAtomicPointer<T>(value) {}
+#else
     inline QAtomicPointer(T *value = nullptr) Q_DECL_NOTHROW
     {
         this->store(value);
     }
-// #endif
+#endif
     inline QAtomicPointer(const QAtomicPointer<T> &other) Q_DECL_NOTHROW
 #ifdef QT_BASIC_ATOMIC_HAS_CONSTRUCTORS
         : QBasicAtomicPointer<T>()
@@ -221,11 +221,11 @@ public:
 #endif
 };
 
-// QT_WARNING_POP
+QT_WARNING_POP
 
-// #ifdef QT_BASIC_ATOMIC_HAS_CONSTRUCTORS
-// #  undef QT_BASIC_ATOMIC_HAS_CONSTRUCTORS
-// #endif
+#ifdef QT_BASIC_ATOMIC_HAS_CONSTRUCTORS
+#  undef QT_BASIC_ATOMIC_HAS_CONSTRUCTORS
+#endif
 
 /*!
     This is a helper for the assignment operators of implicitly

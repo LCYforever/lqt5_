@@ -25,6 +25,7 @@ static void includeFileHook(const std::string &, const std::string &, FILE *);
 using namespace rpp;
 
 #include <QtCore/QtCore>
+#include <QDebug>
 
 class PreprocessorPrivate
 {
@@ -60,13 +61,12 @@ Preprocessor::~Preprocessor()
 
 void Preprocessor::processFile(const QString &fileName)
 {
-    printf("Preprocess file : %s\n", fileName.toUtf8().constData());
+    qDebug()<<"Preprocess file :"<<fileName.toUtf8().constData()<<'\n';
     pp proc(d->env);
     d->initPP(proc);
-
     d->result.reserve(d->result.size() + 20 * 1024);
-
     d->result += "# 1 \"" + fileName.toLatin1() + "\"\n"; // ### REMOVE ME
+	qDebug() << "d->result :" << d->result << '\n';
     proc.file(fileName.toLocal8Bit().constData(), std::back_inserter(d->result));
 }
 

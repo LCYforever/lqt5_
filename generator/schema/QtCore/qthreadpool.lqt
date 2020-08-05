@@ -53,7 +53,7 @@ QT_BEGIN_NAMESPACE
 class QThreadPoolPrivate;
 class Q_CORE_EXPORT QThreadPool : public QObject
 {
-    LQT_OBJECT Q_OBJECT
+    LQT_OBJECT O_OBJECT
     Q_DECLARE_PRIVATE(QThreadPool)
     Q_PROPERTY(int expiryTimeout READ expiryTimeout WRITE setExpiryTimeout)
     Q_PROPERTY(int maxThreadCount READ maxThreadCount WRITE setMaxThreadCount)
@@ -88,10 +88,10 @@ public:
 
     void clear();
 
-// #if QT_DEPRECATED_SINCE(5, 9)
-//     QT_DEPRECATED_X("use tryTake(), but note the different deletion rules")
-//     void cancel(QRunnable *runnable);
-// #endif
+#if QT_DEPRECATED_SINCE(5, 9)
+    QT_DEPRECATED_X("use tryTake(), but note the different deletion rules")
+    void cancel(QRunnable *runnable);
+#endif
     Q_REQUIRED_RESULT bool tryTake(QRunnable *runnable);
 };
 

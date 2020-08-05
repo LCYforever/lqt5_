@@ -55,7 +55,7 @@ class QWinEventNotifier;
 
 class Q_CORE_EXPORT QAbstractEventDispatcher : public QObject
 {
-    LQT_OBJECT Q_OBJECT
+    LQT_OBJECT O_OBJECT
     Q_DECLARE_PRIVATE(QAbstractEventDispatcher)
 
 public:

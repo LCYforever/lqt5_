@@ -57,10 +57,10 @@ public:
     QCollatorSortKey(const QCollatorSortKey &other);
     ~QCollatorSortKey();
     QCollatorSortKey &operator=(const QCollatorSortKey &other);
-// #ifdef Q_COMPILER_RVALUE_REFS
-//     inline QCollatorSortKey &operator=(QCollatorSortKey &&other) Q_DECL_NOTHROW
-//     { swap(other); return *this; }
-// #endif
+#ifdef Q_COMPILER_RVALUE_REFS
+    inline QCollatorSortKey &operator=(QCollatorSortKey &&other) Q_DECL_NOTHROW
+    { swap(other); return *this; }
+#endif
     void swap(QCollatorSortKey &other) Q_DECL_NOTHROW
     { d.swap(other.d); }
 
@@ -75,10 +75,10 @@ private:
     QCollatorSortKey();
 };
 
-// inline bool operator<(const QCollatorSortKey &lhs, const QCollatorSortKey &rhs)
-// {
-//     return lhs.compare(rhs) < 0;
-// }
+inline bool operator<(const QCollatorSortKey &lhs, const QCollatorSortKey &rhs)
+{
+    return lhs.compare(rhs) < 0;
+}
 
 class Q_CORE_EXPORT QCollator
 {
@@ -87,12 +87,12 @@ public:
     QCollator(const QCollator &);
     ~QCollator();
     QCollator &operator=(const QCollator &);
-// #ifdef Q_COMPILER_RVALUE_REFS
-//     QCollator(QCollator &&other) Q_DECL_NOTHROW
-//         : d(other.d) { other.d = nullptr; }
-//     QCollator &operator=(QCollator &&other) Q_DECL_NOTHROW
-//     { swap(other); return *this; }
-// #endif
+#ifdef Q_COMPILER_RVALUE_REFS
+    QCollator(QCollator &&other) Q_DECL_NOTHROW
+        : d(other.d) { other.d = nullptr; }
+    QCollator &operator=(QCollator &&other) Q_DECL_NOTHROW
+    { swap(other); return *this; }
+#endif
 
     void swap(QCollator &other) Q_DECL_NOTHROW
     { qSwap(d, other.d); }
