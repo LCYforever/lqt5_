@@ -49,7 +49,7 @@ QT_BEGIN_NAMESPACE
 class QFinalStatePrivate;
 class Q_CORE_EXPORT QFinalState : public QAbstractState
 {
-    LQT_OBJECT O_OBJECT
+    LQT_OBJECT Q_OBJECT
 public:
     QFinalState(QState *parent = nullptr);
     ~QFinalState();

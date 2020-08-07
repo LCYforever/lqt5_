@@ -65,8 +65,8 @@ public:
         typedef QCborValueRef reference;
         typedef QCborValueRef *pointer;
 
-        Q_DECL_CONSTEXPR Iterator() = default;
-        Q_DECL_CONSTEXPR Iterator(const Iterator &) = default;
+        Q_DECL_CONSTEXPR Iterator(){};
+        Q_DECL_CONSTEXPR Iterator(const Iterator &){};
         Iterator &operator=(const Iterator &other)
         {
             // rebind the reference
@@ -77,7 +77,7 @@ public:
 
         QCborValueRef operator*() const { return item; }
         QCborValueRef *operator->() const { return &item; }
-        QCborValueRef operator[](qsizetype j) { return { item.d, item.i + j }; }
+        //QCborValueRef operator[](qsizetype j) { return { item.d, item.i + j }; }
 
         bool operator==(const Iterator &o) const { return item.d == o.item.d && item.i == o.item.i; }
         bool operator!=(const Iterator &o) const { return !(*this == o); }
@@ -97,8 +97,8 @@ public:
         Iterator operator--(int) { Iterator n = *this; item.i--; return n; }
         Iterator &operator+=(qsizetype j) { item.i += j; return *this; }
         Iterator &operator-=(qsizetype j) { item.i -= j; return *this; }
-        Iterator operator+(qsizetype j) const { return Iterator({ item.d, item.i + j }); }
-        Iterator operator-(qsizetype j) const { return Iterator({ item.d, item.i - j }); }
+        Iterator operator+(qsizetype j) const;
+        Iterator operator-(qsizetype j) const;
         qsizetype operator-(Iterator j) const { return item.i - j.item.i; }
     };
 
@@ -114,8 +114,8 @@ public:
         typedef const QCborValueRef reference;
         typedef const QCborValueRef *pointer;
 
-        Q_DECL_CONSTEXPR ConstIterator() = default;
-        Q_DECL_CONSTEXPR ConstIterator(const ConstIterator &) = default;
+        Q_DECL_CONSTEXPR ConstIterator(){};
+        Q_DECL_CONSTEXPR ConstIterator(const ConstIterator &){};
         ConstIterator &operator=(const ConstIterator &other)
         {
             // rebind the reference
@@ -126,7 +126,7 @@ public:
 
         const QCborValueRef operator*() const { return item; }
         const QCborValueRef *operator->() const { return &item; }
-        const QCborValueRef operator[](qsizetype j) { return { item.d, item.i + j }; }
+        //const QCborValueRef operator[](qsizetype j) { return { item.d, item.i + j }; }
 
         bool operator==(const Iterator &o) const { return item.d == o.item.d && item.i == o.item.i; }
         bool operator!=(const Iterator &o) const { return !(*this == o); }
@@ -146,8 +146,8 @@ public:
         ConstIterator operator--(int) { ConstIterator n = *this; item.i--; return n; }
         ConstIterator &operator+=(qsizetype j) { item.i += j; return *this; }
         ConstIterator &operator-=(qsizetype j) { item.i -= j; return *this; }
-        ConstIterator operator+(qsizetype j) const { return ConstIterator({ item.d, item.i + j }); }
-        ConstIterator operator-(qsizetype j) const { return ConstIterator({ item.d, item.i - j }); }
+        //ConstIterator operator+(qsizetype j) const { return ConstIterator({ item.d, item.i + j }); }
+        //ConstIterator operator-(qsizetype j) const { return ConstIterator({ item.d, item.i - j }); }
         qsizetype operator-(ConstIterator j) const { return item.i - j.item.i; }
     };
 
@@ -162,13 +162,7 @@ public:
     QCborArray() noexcept;
     QCborArray(const QCborArray &other) noexcept;
     QCborArray &operator=(const QCborArray &other) noexcept;
-    QCborArray(std::initializer_list<QCborValue> args)
-        : QCborArray()
-    {
-        detach(qsizetype(args.size()));
-        for (const QCborValue &v : args)
-            append(v);
-    }
+    QCborArray(std::initializer_list<QCborValue> args);
     ~QCborArray();
 
     void swap(QCborArray &other) noexcept
@@ -201,7 +195,7 @@ public:
     void prepend(QCborValue &&value) { insert(0, std::move(value)); }
     void append(const QCborValue &value) { insert(-1, value); }
     void append(QCborValue &&value) { insert(-1, std::move(value)); }
-    QCborValue extract(ConstIterator it) { return extract(Iterator{ it.item.d, it.item.i }); }
+    //QCborValue extract(ConstIterator it) { return extract(Iterator{ it.item.d, it.item.i }); }
     QCborValue extract(Iterator it);
     void removeAt(qsizetype i);
     QCborValue takeAt(qsizetype i) { Q_ASSERT(i < size()); return extract(begin() + i); }
@@ -213,39 +207,37 @@ public:
     bool contains(const QCborValue &value) const;
 
     int compare(const QCborArray &other) const noexcept Q_DECL_PURE_FUNCTION;
-#if 0 && QT_HAS_INCLUDE(<compare>)
-    std::strong_ordering operator<=>(const QCborArray &other) const
-    {
-        int c = compare(other);
-        if (c > 0) return std::strong_ordering::greater;
-        if (c == 0) return std::strong_ordering::equivalent;
-        return std::strong_ordering::less;
-    }
-#else
+//#if 0 && QT_HAS_INCLUDE(<compare>)
+//    std::strong_ordering operator<=>(const QCborArray &other) const
+//    {
+//        int c = compare(other);
+//        if (c > 0) return std::strong_ordering::greater;
+//        if (c == 0) return std::strong_ordering::equivalent;
+//        return std::strong_ordering::less;
+//    }
+//#else
     bool operator==(const QCborArray &other) const noexcept
     { return compare(other) == 0; }
     bool operator!=(const QCborArray &other) const noexcept
     { return !(*this == other); }
     bool operator<(const QCborArray &other) const
     { return compare(other) < 0; }
-#endif
+//#endif
 
     typedef Iterator iterator;
     typedef ConstIterator const_iterator;
-    iterator begin() { detach(); return iterator{d.data(), 0}; }
-    const_iterator constBegin() const { return const_iterator{d.data(), 0}; }
-    const_iterator begin() const { return constBegin(); }
+    iterator begin();
+    const_iterator constBegin() const;
+    // const_iterator begin() const { return constBegin(); }
     const_iterator cbegin() const { return constBegin(); }
-    iterator end() { detach(); return iterator{d.data(), size()}; }
-    const_iterator constEnd() const { return const_iterator{d.data(), size()}; }
-    const_iterator end() const { return constEnd(); }
+    iterator end();
+    const_iterator constEnd() const;
+//     const_iterator end() const { return constEnd(); }
     const_iterator cend() const { return constEnd(); }
-    iterator insert(iterator before, const QCborValue &value)
-    { insert(before.item.i, value); return iterator{d.data(), before.item.i}; }
-    iterator insert(const_iterator before, const QCborValue &value)
-    { insert(before.item.i, value); return iterator{d.data(), before.item.i}; }
-    iterator erase(iterator it) { removeAt(it.item.i); return iterator{d.data(), it.item.i}; }
-    iterator erase(const_iterator it) { removeAt(it.item.i); return iterator{d.data(), it.item.i}; }
+    iterator insert(iterator before, const QCborValue &value);
+    iterator insert(const_iterator before, const QCborValue &value);
+    iterator erase(iterator it);
+    iterator erase(const_iterator it);
 
     void push_back(const QCborValue &t) { append(t); }
     void push_front(const QCborValue &t) { prepend(t); }
@@ -278,20 +270,21 @@ private:
 
 Q_DECLARE_SHARED(QCborArray)
 
-inline QCborValue::QCborValue(QCborArray &&a)
-    : n(-1), container(a.d.take()), t(Array)
-{
-}
+// inline QCborValue::QCborValue(QCborArray &&a)
+//     : n(-1), container(a.d.take()), t(Array)
+// {
+// }
 
-inline QCborArray QCborValueRef::toArray() const
-{
-    return concrete().toArray();
-}
+// inline QCborArray QCborValueRef::toArray() const
+// {
+//     return concrete().toArray();
+// }
 
-inline QCborArray QCborValueRef::toArray(const QCborArray &a) const
-{
-    return concrete().toArray(a);
-}
+// inline QCborArray QCborValueRef::toArray(const QCborArray &a) const
+// {
+//     return concrete().toArray(a);
+// }
+
 
 Q_CORE_EXPORT uint qHash(const QCborArray &array, uint seed = 0);
 

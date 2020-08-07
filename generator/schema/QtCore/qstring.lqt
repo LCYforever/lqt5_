@@ -53,6 +53,8 @@
 #include <QtCore/qstringalgorithms.lqt>
 #include <QtCore/qstringview.lqt>
 
+// #include <string>
+// #include <iterator>
 
 #if defined(Q_OS_ANDROID) && !defined(ANDROID_HAS_WSTRING)
 // std::wstring is disabled on android's glibc, as bionic lacks certain features
@@ -63,6 +65,7 @@ namespace std
 }
 #endif
 
+// #include <stdarg.lqt>
 
 #ifdef truncate
 #error qstring.h must be included before any header file that defines truncate
@@ -127,21 +130,23 @@ public:
     Q_REQUIRED_RESULT inline bool endsWith(QChar c, Qt::CaseSensitivity cs) const Q_DECL_NOTHROW
     { return QtPrivate::endsWith(*this, QStringView(&c, 1), cs); }
 
-    using value_type = const char;
-    using reference = value_type&;
-    using const_reference = reference;
-    using iterator = value_type*;
-    using const_iterator = iterator;
-    using difference_type = int; // violates Container concept requirements
-    using size_type = int;       // violates Container concept requirements
+    // TODO:lqt cpptoxml parser
+    // using value_type = const char;
+    // using reference = value_type&;
+    // using const_reference = reference;
+    // using iterator = value_type*;
+    // using const_iterator = iterator;
+    // using difference_type = int; // violates Container concept requirements
+    // using size_type = int;       // violates Container concept requirements
 
     Q_DECL_CONSTEXPR const_iterator begin() const Q_DECL_NOTHROW { return data(); }
     Q_DECL_CONSTEXPR const_iterator cbegin() const Q_DECL_NOTHROW { return data(); }
     Q_DECL_CONSTEXPR const_iterator end() const Q_DECL_NOTHROW { return data() + size(); }
     Q_DECL_CONSTEXPR const_iterator cend() const Q_DECL_NOTHROW { return data() + size(); }
 
-    using reverse_iterator = std::reverse_iterator<iterator>;
-    using const_reverse_iterator = reverse_iterator;
+    // TODO:lqt cpptoxml parser
+    // using reverse_iterator = std::reverse_iterator<iterator>;
+    // using const_reverse_iterator = reverse_iterator;
 
     const_reverse_iterator rbegin() const Q_DECL_NOTHROW { return const_reverse_iterator(end()); }
     const_reverse_iterator crbegin() const Q_DECL_NOTHROW { return const_reverse_iterator(end()); }
@@ -664,12 +669,19 @@ public:
     static QString number(qulonglong, int base=10);
     static QString number(double, char f='g', int prec=6);
 
-    friend Q_CORE_EXPORT bool operator==(const QString &s1, const QString &s2) Q_DECL_NOTHROW;
-    friend Q_CORE_EXPORT bool operator<(const QString &s1, const QString &s2) Q_DECL_NOTHROW;
-    friend inline bool operator>(const QString &s1, const QString &s2) Q_DECL_NOTHROW { return s2 < s1; }
-    friend inline bool operator!=(const QString &s1, const QString &s2) Q_DECL_NOTHROW { return !(s1 == s2); }
-    friend inline bool operator<=(const QString &s1, const QString &s2) Q_DECL_NOTHROW { return !(s1 > s2); }
-    friend inline bool operator>=(const QString &s1, const QString &s2) Q_DECL_NOTHROW { return !(s1 < s2); }
+    Q_CORE_EXPORT bool operator==(const QString &s) Q_DECL_NOTHROW;
+    Q_CORE_EXPORT bool operator<(const QString &s) Q_DECL_NOTHROW;
+    inline bool operator>(const QString &s) Q_DECL_NOTHROW { return s2 < s1; }
+    inline bool operator!=(const QString &s) Q_DECL_NOTHROW { return !(s1 == s2); }
+    inline bool operator<=(const QString &s) Q_DECL_NOTHROW { return !(s1 > s2); }
+    inline bool operator>=(const QString &s) Q_DECL_NOTHROW { return !(s1 < s2); }
+    // TODO:lqt bind friend operator functions
+    // friend Q_CORE_EXPORT bool operator==(const QString &s1, const QString &s2) Q_DECL_NOTHROW;
+    // friend Q_CORE_EXPORT bool operator<(const QString &s1, const QString &s2) Q_DECL_NOTHROW;
+    // friend inline bool operator>(const QString &s1, const QString &s2) Q_DECL_NOTHROW { return s2 < s1; }
+    // friend inline bool operator!=(const QString &s1, const QString &s2) Q_DECL_NOTHROW { return !(s1 == s2); }
+    // friend inline bool operator<=(const QString &s1, const QString &s2) Q_DECL_NOTHROW { return !(s1 > s2); }
+    // friend inline bool operator>=(const QString &s1, const QString &s2) Q_DECL_NOTHROW { return !(s1 < s2); }
 
     bool operator==(QLatin1String s) const Q_DECL_NOTHROW;
     bool operator<(QLatin1String s) const Q_DECL_NOTHROW;
@@ -740,19 +752,19 @@ public:
     inline QT_ASCII_CAST_WARN bool operator<=(const QByteArray &s) const;
     inline QT_ASCII_CAST_WARN bool operator>=(const QByteArray &s) const;
 
-    friend inline QT_ASCII_CAST_WARN bool operator==(const char *s1, const QString &s2);
-    friend inline QT_ASCII_CAST_WARN bool operator!=(const char *s1, const QString &s2);
-    friend inline QT_ASCII_CAST_WARN bool operator<(const char *s1, const QString &s2);
-    friend inline QT_ASCII_CAST_WARN bool operator>(const char *s1, const QString &s2);
-    friend inline QT_ASCII_CAST_WARN bool operator<=(const char *s1, const QString &s2);
-    friend inline QT_ASCII_CAST_WARN bool operator>=(const char *s1, const QString &s2);
+    // friend inline QT_ASCII_CAST_WARN bool operator==(const char *s1, const QString &s2);
+    // friend inline QT_ASCII_CAST_WARN bool operator!=(const char *s1, const QString &s2);
+    // friend inline QT_ASCII_CAST_WARN bool operator<(const char *s1, const QString &s2);
+    // friend inline QT_ASCII_CAST_WARN bool operator>(const char *s1, const QString &s2);
+    // friend inline QT_ASCII_CAST_WARN bool operator<=(const char *s1, const QString &s2);
+    // friend inline QT_ASCII_CAST_WARN bool operator>=(const char *s1, const QString &s2);
 
-    friend inline QT_ASCII_CAST_WARN bool operator==(const char *s1, const QStringRef &s2);
-    friend inline QT_ASCII_CAST_WARN bool operator!=(const char *s1, const QStringRef &s2);
-    friend inline QT_ASCII_CAST_WARN bool operator<(const char *s1, const QStringRef &s2);
-    friend inline QT_ASCII_CAST_WARN bool operator>(const char *s1, const QStringRef &s2);
-    friend inline QT_ASCII_CAST_WARN bool operator<=(const char *s1, const QStringRef &s2);
-    friend inline QT_ASCII_CAST_WARN bool operator>=(const char *s1, const QStringRef &s2);
+    // friend inline QT_ASCII_CAST_WARN bool operator==(const char *s1, const QStringRef &s2);
+    // friend inline QT_ASCII_CAST_WARN bool operator!=(const char *s1, const QStringRef &s2);
+    // friend inline QT_ASCII_CAST_WARN bool operator<(const char *s1, const QStringRef &s2);
+    // friend inline QT_ASCII_CAST_WARN bool operator>(const char *s1, const QStringRef &s2);
+    // friend inline QT_ASCII_CAST_WARN bool operator<=(const char *s1, const QStringRef &s2);
+    // friend inline QT_ASCII_CAST_WARN bool operator>=(const char *s1, const QStringRef &s2);
 #endif
 
     typedef QChar *iterator;
@@ -837,15 +849,15 @@ private:
 
     Data *d;
 
-    friend inline bool operator==(QChar, const QString &) Q_DECL_NOTHROW;
-    friend inline bool operator< (QChar, const QString &) Q_DECL_NOTHROW;
-    friend inline bool operator> (QChar, const QString &) Q_DECL_NOTHROW;
-    friend inline bool operator==(QChar, const QStringRef &) Q_DECL_NOTHROW;
-    friend inline bool operator< (QChar, const QStringRef &) Q_DECL_NOTHROW;
-    friend inline bool operator> (QChar, const QStringRef &) Q_DECL_NOTHROW;
-    friend inline bool operator==(QChar, QLatin1String) Q_DECL_NOTHROW;
-    friend inline bool operator< (QChar, QLatin1String) Q_DECL_NOTHROW;
-    friend inline bool operator> (QChar, QLatin1String) Q_DECL_NOTHROW;
+    // friend inline bool operator==(QChar, const QString &) Q_DECL_NOTHROW;
+    // friend inline bool operator< (QChar, const QString &) Q_DECL_NOTHROW;
+    // friend inline bool operator> (QChar, const QString &) Q_DECL_NOTHROW;
+    // friend inline bool operator==(QChar, const QStringRef &) Q_DECL_NOTHROW;
+    // friend inline bool operator< (QChar, const QStringRef &) Q_DECL_NOTHROW;
+    // friend inline bool operator> (QChar, const QStringRef &) Q_DECL_NOTHROW;
+    // friend inline bool operator==(QChar, QLatin1String) Q_DECL_NOTHROW;
+    // friend inline bool operator< (QChar, QLatin1String) Q_DECL_NOTHROW;
+    // friend inline bool operator> (QChar, QLatin1String) Q_DECL_NOTHROW;
 
     void reallocData(uint alloc, bool grow = false);
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
@@ -894,20 +906,21 @@ private:
     friend struct QAbstractConcatenable;
 
     template <typename T> static
-    T toIntegral_helper(const QChar *data, int len, bool *ok, int base)
-    {
-        using Int64 = typename std::conditional<std::is_unsigned<T>::value, qulonglong, qlonglong>::type;
-        using Int32 = typename std::conditional<std::is_unsigned<T>::value, uint, int>::type;
+    T toIntegral_helper(const QChar *data, int len, bool *ok, int base);
+    // TODO:lqt cpptoxml parser
+    // {
+    //     using Int64 = typename std::conditional<std::is_unsigned<T>::value, qulonglong, qlonglong>::type;
+    //     using Int32 = typename std::conditional<std::is_unsigned<T>::value, uint, int>::type;
 
-        // we select the right overload by casting size() to int or uint
-        Int64 val = toIntegral_helper(data, Int32(len), ok, base);
-        if (T(val) != val) {
-            if (ok)
-                *ok = false;
-            val = 0;
-        }
-        return T(val);
-    }
+    //     // we select the right overload by casting size() to int or uint
+    //     Int64 val = toIntegral_helper(data, Int32(len), ok, base);
+    //     if (T(val) != val) {
+    //         if (ok)
+    //             *ok = false;
+    //         val = 0;
+    //     }
+    //     return T(val);
+    // }
 
 public:
     typedef Data * DataPtr;
@@ -1861,11 +1874,12 @@ QT_DEPRECATED inline QString escape(const QString &plain) {
 #endif
 }
 
-namespace QtPrivate {
-// used by qPrintable() and qUtf8Printable() macros
-inline const QString &asString(const QString &s)    { return s; }
-inline QString &&asString(QString &&s)              { return std::move(s); }
-}
+// TODO:lqt cpptoxml parser
+// namespace QtPrivate {
+// // used by qPrintable() and qUtf8Printable() macros
+// inline const QString &asString(const QString &s)    { return s; }
+// inline QString &&asString(QString &&s)              { return std::move(s); }
+// }
 
 QT_END_NAMESPACE
 

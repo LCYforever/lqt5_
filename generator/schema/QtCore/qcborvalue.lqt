@@ -234,14 +234,12 @@ public:
     QCborTag tag(QCborTag defaultValue = QCborTag(-1)) const;
     QCborValue taggedValue(const QCborValue &defaultValue = QCborValue()) const;
 
-    QByteArray toByteArray(const QByteArray &defaultValue = {}) const;
-    QString toString(const QString &defaultValue = {}) const;
-    QDateTime toDateTime(const QDateTime &defaultValue = {}) const;
-    QUrl toUrl(const QUrl &defaultValue = {}) const;
-#if QT_CONFIG(regularexpression)
-    QRegularExpression toRegularExpression(const QRegularExpression &defaultValue = {}) const;
-#endif
-    QUuid toUuid(const QUuid &defaultValue = {}) const;
+    QByteArray toByteArray(const QByteArray &defaultValue = QByteArray()) const;
+    QString toString(const QString &defaultValue = QString()) const;
+    QDateTime toDateTime(const QDateTime &defaultValue = QDateTime()) const;
+    QUrl toUrl(const QUrl &defaultValue = QUrl()) const;
+    QRegularExpression toRegularExpression(const QRegularExpression &defaultValue = QRegularExpression()) const;
+    QUuid toUuid(const QUuid &defaultValue = QUuid()) const;
 
     // only forward-declared, need split functions
     QCborArray toArray() const;
@@ -328,12 +326,10 @@ class Q_CORE_EXPORT QCborValueRef
 public:
     operator QCborValue() const     { return concrete(); }
 
-    QCborValueRef(const QCborValueRef &) noexcept = default;
-    QCborValueRef(QCborValueRef &&) noexcept = default;
+    QCborValueRef(const QCborValueRef &){};
+    // QCborValueRef(QCborValueRef &&) noexcept = default;
     QCborValueRef &operator=(const QCborValue &other)
     { assign(*this, other); return *this; }
-    QCborValueRef &operator=(QCborValue &&other)
-    { assign(*this, std::move(other)); other.container = nullptr; return *this; }
     QCborValueRef &operator=(const QCborValueRef &other)
     { assign(*this, other); return *this; }
 
@@ -377,19 +373,17 @@ public:
     double toDouble(double defaultValue = 0) const
     { return concrete().toDouble(defaultValue); }
 
-    QByteArray toByteArray(const QByteArray &defaultValue = {}) const
+    QByteArray toByteArray(const QByteArray &defaultValue = QByteArray()) const
     { return concrete().toByteArray(defaultValue); }
-    QString toString(const QString &defaultValue = {}) const
+    QString toString(const QString &defaultValue = QString()) const
     { return concrete().toString(defaultValue); }
-    QDateTime toDateTime(const QDateTime &defaultValue = {}) const
+    QDateTime toDateTime(const QDateTime &defaultValue = QDateTime()) const
     { return concrete().toDateTime(defaultValue); }
-    QUrl toUrl(const QUrl &defaultValue = {}) const
+    QUrl toUrl(const QUrl &defaultValue = QUrl()) const
     { return concrete().toUrl(defaultValue); }
-#if QT_CONFIG(regularexpression)
-    QRegularExpression toRegularExpression(const QRegularExpression &defaultValue = {}) const
+    QRegularExpression toRegularExpression(const QRegularExpression &defaultValue = QRegularExpression()) const
     { return concrete().toRegularExpression(defaultValue); }
-#endif
-    QUuid toUuid(const QUuid &defaultValue = {}) const
+    QUuid toUuid(const QUuid &defaultValue = QUuid()) const
     { return concrete().toUuid(defaultValue); }
 
     // only forward-declared, need split functions. Implemented in qcbor{array,map}.h

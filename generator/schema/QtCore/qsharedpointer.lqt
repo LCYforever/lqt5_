@@ -44,9 +44,9 @@
 #include <QtCore/qatomic.lqt>
 #include <QtCore/qshareddata.lqt>
 
-#ifndef Q_QDOC
-# include <QtCore/qsharedpointer_impl.lqt>
-#else
+//#ifndef Q_QDOC
+//# include <QtCore/qsharedpointer_impl.lqt>
+//#else
 
 QT_BEGIN_NAMESPACE
 
@@ -97,8 +97,8 @@ public:
     template <class X> QSharedPointer<X> constCast() const;
     template <class X> QSharedPointer<X> objectCast() const;
 
-    template <typename... Args>
-    static inline QSharedPointer<T> create(Args &&... args);
+    //template <typename... Args>
+    //static inline QSharedPointer<T> create(Args &&... args);
 };
 
 template <class T>

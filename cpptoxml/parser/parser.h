@@ -169,6 +169,7 @@ public:
   bool skipUntilDeclaration();
   bool skipUntilStatement();
   bool skip(int l, int r);
+  bool skipStatement();
 
   void advance();
 

@@ -47,9 +47,9 @@
 #include <QtCore/qstring.lqt>
 #include <QtCore/qbytearray.lqt>
 #include <QtCore/qlist.lqt>
-#ifdef QT_INCLUDE_COMPAT
+//#ifdef QT_INCLUDE_COMPAT
 #include <QtCore/qcoreevent.lqt>
-#endif
+//#endif
 #include <QtCore/qscopedpointer.lqt>
 #include <QtCore/qmetatype.lqt>
 
@@ -73,9 +73,9 @@ class QWidget;
 #ifndef QT_NO_REGEXP
 class QRegExp;
 #endif
-#if QT_CONFIG(regularexpression)
+//#if QT_CONFIG(regularexpression)
 class QRegularExpression;
-#endif
+//#endif
 #ifndef QT_NO_USERDATA
 class QObjectUserData;
 #endif
@@ -83,13 +83,13 @@ struct QDynamicMetaObjectData;
 
 typedef QList<QObject*> QObjectList;
 
-Q_CORE_EXPORT void qt_qFindChildren_helper(const QObject *parent, const QString &name,
-                                           const QMetaObject &mo, QList<void *> *list, Qt::FindChildOptions options);
-Q_CORE_EXPORT void qt_qFindChildren_helper(const QObject *parent, const QRegExp &re,
-                                           const QMetaObject &mo, QList<void *> *list, Qt::FindChildOptions options);
-Q_CORE_EXPORT void qt_qFindChildren_helper(const QObject *parent, const QRegularExpression &re,
-                                           const QMetaObject &mo, QList<void *> *list, Qt::FindChildOptions options);
-Q_CORE_EXPORT QObject *qt_qFindChild_helper(const QObject *parent, const QString &name, const QMetaObject &mo, Qt::FindChildOptions options);
+// Q_CORE_EXPORT void qt_qFindChildren_helper(const QObject *parent, const QString &name,
+//                                            const QMetaObject &mo, QList<void *> *list, Qt::FindChildOptions options);
+// Q_CORE_EXPORT void qt_qFindChildren_helper(const QObject *parent, const QRegExp &re,
+//                                            const QMetaObject &mo, QList<void *> *list, Qt::FindChildOptions options);
+// Q_CORE_EXPORT void qt_qFindChildren_helper(const QObject *parent, const QRegularExpression &re,
+//                                            const QMetaObject &mo, QList<void *> *list, Qt::FindChildOptions options);
+// Q_CORE_EXPORT QObject *qt_qFindChild_helper(const QObject *parent, const QString &name, const QMetaObject &mo, Qt::FindChildOptions options);
 
 class Q_CORE_EXPORT QObjectData {
 public:
@@ -115,7 +115,7 @@ public:
 
 class Q_CORE_EXPORT QObject
 {
-    LQT_OBJECT O_OBJECT
+    LQT_OBJECT Q_OBJECT
     Q_PROPERTY(QString objectName READ objectName WRITE setObjectName NOTIFY objectNameChanged)
     Q_DECLARE_PRIVATE(QObject)
 
@@ -126,14 +126,14 @@ public:
     virtual bool event(QEvent *event);
     virtual bool eventFilter(QObject *watched, QEvent *event);
 
-#if defined(QT_NO_TRANSLATION)
-    static QString tr(const char *sourceText, const char * = nullptr, int = -1)
-        { return QString::fromUtf8(sourceText); }
-#if QT_DEPRECATED_SINCE(5, 0)
-    QT_DEPRECATED static QString trUtf8(const char *sourceText, const char * = nullptr, int = -1)
-        { return QString::fromUtf8(sourceText); }
-#endif
-#endif //QT_NO_TRANSLATION
+// #if defined(QT_NO_TRANSLATION)
+//     static QString tr(const char *sourceText, const char * = nullptr, int = -1)
+//         { return QString::fromUtf8(sourceText); }
+// #if QT_DEPRECATED_SINCE(5, 0)
+//     QT_DEPRECATED static QString trUtf8(const char *sourceText, const char * = nullptr, int = -1)
+//         { return QString::fromUtf8(sourceText); }
+// #endif
+// #endif //QT_NO_TRANSLATION
 
     QString objectName() const;
     void setObjectName(const QString &name);
@@ -147,59 +147,57 @@ public:
     QThread *thread() const;
     void moveToThread(QThread *thread);
 
+//#if QT_HAS_INCLUDE(<chrono>)
+//    Q_ALWAYS_INLINE
+//    int startTimer(std::chrono::milliseconds time, Qt::TimerType timerType = Qt::CoarseTimer)
+//    {
+//        return startTimer(int(time.count()), timerType);
+//    }
+//#endif
     int startTimer(int interval, Qt::TimerType timerType = Qt::CoarseTimer);
-#if QT_HAS_INCLUDE(<chrono>)
-    Q_ALWAYS_INLINE
-    int startTimer(std::chrono::milliseconds time, Qt::TimerType timerType = Qt::CoarseTimer)
-    {
-        return startTimer(int(time.count()), timerType);
-    }
-#endif
     void killTimer(int id);
 
-    template<typename T>
-    inline T findChild(const QString &aName = QString(), Qt::FindChildOptions options = Qt::FindChildrenRecursively) const
-    {
-        typedef typename std::remove_cv<typename std::remove_pointer<T>::type>::type ObjType;
-        return static_cast<T>(qt_qFindChild_helper(this, aName, ObjType::staticMetaObject, options));
-    }
+//     template<typename T>
+//     inline T findChild(const QString &aName = QString(), Qt::FindChildOptions options = Qt::FindChildrenRecursively) const
+//     {
+//         typedef typename std::remove_cv<typename std::remove_pointer<T>::type>::type ObjType;
+//         return static_cast<T>(qt_qFindChild_helper(this, aName, ObjType::staticMetaObject, options));
+//     }
 
-    template<typename T>
-    inline QList<T> findChildren(const QString &aName = QString(), Qt::FindChildOptions options = Qt::FindChildrenRecursively) const
-    {
-        typedef typename std::remove_cv<typename std::remove_pointer<T>::type>::type ObjType;
-        QList<T> list;
-        qt_qFindChildren_helper(this, aName, ObjType::staticMetaObject,
-                                reinterpret_cast<QList<void *> *>(&list), options);
-        return list;
-    }
+//     template<typename T>
+//     inline QList<T> findChildren(const QString &aName = QString(), Qt::FindChildOptions options = Qt::FindChildrenRecursively) const
+//     {
+//         typedef typename std::remove_cv<typename std::remove_pointer<T>::type>::type ObjType;
+//         QList<T> list;
+//         qt_qFindChildren_helper(this, aName, ObjType::staticMetaObject,
+//                                 reinterpret_cast<QList<void *> *>(&list), options);
+//         return list;
+//     }
 
-#ifndef QT_NO_REGEXP
-#if QT_DEPRECATED_SINCE(5, 13)
-    template<typename T>
-    QT_DEPRECATED_X("Use findChildren(const QRegularExpression &, ...) instead.")
-    inline QList<T> findChildren(const QRegExp &re, Qt::FindChildOptions options = Qt::FindChildrenRecursively) const
-    {
-        typedef typename std::remove_cv<typename std::remove_pointer<T>::type>::type ObjType;
-        QList<T> list;
-        qt_qFindChildren_helper(this, re, ObjType::staticMetaObject,
-                                reinterpret_cast<QList<void *> *>(&list), options);
-        return list;
-    }
-#endif
-#endif
+// #ifndef QT_NO_REGEXP
+//     template<typename T>
+//     inline QList<T> findChildren(const QRegExp &re, Qt::FindChildOptions options = Qt::FindChildrenRecursively) const
+//     {
+//         typedef typename std::remove_cv<typename std::remove_pointer<T>::type>::type ObjType;
+//         QList<T> list;
+//         qt_qFindChildren_helper(this, re, ObjType::staticMetaObject,
+//                                 reinterpret_cast<QList<void *> *>(&list), options);
+//         return list;
+//     }
+// #endif
 
-#if QT_CONFIG(regularexpression)
-    template<typename T>
-    inline QList<T> findChildren(const QRegularExpression &re, Qt::FindChildOptions options = Qt::FindChildrenRecursively) const
-    {
-        typedef typename std::remove_cv<typename std::remove_pointer<T>::type>::type ObjType;
-        QList<T> list;
-        qt_qFindChildren_helper(this, re, ObjType::staticMetaObject,
-                                reinterpret_cast<QList<void *> *>(&list), options);
-        return list;
-    }
-#endif // QT_CONFIG(regularexpression)
+// #if QT_CONFIG(regularexpression)
+//     template<typename T>
+//     inline QList<T> findChildren(const QRegularExpression &re, Qt::FindChildOptions options = Qt::FindChildrenRecursively) const
+//     {
+//         typedef typename std::remove_cv<typename std::remove_pointer<T>::type>::type ObjType;
+//         QList<T> list;
+//         qt_qFindChildren_helper(this, re, ObjType::staticMetaObject,
+//                                 reinterpret_cast<QList<void *> *>(&list), options);
+//         return list;
+//     }
+// #endif // QT_CONFIG(regularexpression)
+
 
     inline const QObjectList &children() const { return d_ptr->children; }
 
@@ -233,9 +231,6 @@ public:
     {
         typedef QtPrivate::FunctionPointer<Func1> SignalType;
         typedef QtPrivate::FunctionPointer<Func2> SlotType;
-
-        Q_STATIC_ASSERT_X(QtPrivate::HasLQT_OBJECT O_OBJECT_Macro<typename SignalType::Object>::Value,
-                          "No LQT_OBJECT O_OBJECT in the class with the signal");
 
         //compilation error if the arguments does not match.
         Q_STATIC_ASSERT_X(int(SignalType::ArgumentCount) >= int(SlotType::ArgumentCount),
@@ -274,9 +269,6 @@ public:
         typedef QtPrivate::FunctionPointer<Func1> SignalType;
         typedef QtPrivate::FunctionPointer<Func2> SlotType;
 
-        Q_STATIC_ASSERT_X(QtPrivate::HasLQT_OBJECT O_OBJECT_Macro<typename SignalType::Object>::Value,
-                          "No LQT_OBJECT O_OBJECT in the class with the signal");
-
         //compilation error if the arguments does not match.
         Q_STATIC_ASSERT_X(int(SignalType::ArgumentCount) >= int(SlotType::ArgumentCount),
                           "The slot requires more arguments than the signal provides.");
@@ -312,17 +304,9 @@ public:
     {
         typedef QtPrivate::FunctionPointer<Func1> SignalType;
         const int FunctorArgumentCount = QtPrivate::ComputeFunctorArgumentCount<Func2 , typename SignalType::Arguments>::Value;
-
-        Q_STATIC_ASSERT_X((FunctorArgumentCount >= 0),
-                          "Signal and slot arguments are not compatible.");
+        
         const int SlotArgumentCount = (FunctorArgumentCount >= 0) ? FunctorArgumentCount : 0;
         typedef typename QtPrivate::FunctorReturnType<Func2, typename QtPrivate::List_Left<typename SignalType::Arguments, SlotArgumentCount>::Value>::Value SlotReturnType;
-
-        Q_STATIC_ASSERT_X((QtPrivate::AreArgumentsCompatible<SlotReturnType, typename SignalType::ReturnType>::value),
-                          "Return type of the slot is not compatible with the return type of the signal.");
-
-        Q_STATIC_ASSERT_X(QtPrivate::HasLQT_OBJECT O_OBJECT_Macro<typename SignalType::Object>::Value,
-                          "No LQT_OBJECT O_OBJECT in the class with the signal");
 
         const int *types = nullptr;
         if (type == Qt::QueuedConnection || type == Qt::BlockingQueuedConnection)
@@ -357,9 +341,6 @@ public:
     {
         typedef QtPrivate::FunctionPointer<Func1> SignalType;
         typedef QtPrivate::FunctionPointer<Func2> SlotType;
-
-        Q_STATIC_ASSERT_X(QtPrivate::HasLQT_OBJECT O_OBJECT_Macro<typename SignalType::Object>::Value,
-                          "No LQT_OBJECT O_OBJECT in the class with the signal");
 
         //compilation error if the arguments does not match.
         Q_STATIC_ASSERT_X((QtPrivate::CheckCompatibleArguments<typename SignalType::Arguments, typename SlotType::Arguments>::value),
@@ -448,10 +429,6 @@ protected:
     friend class QThreadData;
 
 private:
-    Q_DISABLE_COPY(QObject)
-    Q_PRIVATE_SLOT(d_func(), void _q_reregisterTimers(void *))
-
-private:
     static QMetaObject::Connection connectImpl(const QObject *sender, void **signal,
                                                const QObject *receiver, void **slotPtr,
                                                QtPrivate::QSlotObjectBase *slot, Qt::ConnectionType type,
@@ -488,11 +465,11 @@ inline QT_DEPRECATED QList<T> qFindChildren(const QObject *o, const QString &nam
 }
 
 #if !defined(QT_NO_REGEXP) || defined(Q_CLANG_QDOC)
-template<typename T>
-inline QT_DEPRECATED QList<T> qFindChildren(const QObject *o, const QRegExp &re)
-{
-    return o->findChildren<T>(re);
-}
+//template<typename T>
+//inline QT_DEPRECATED QList<T> qFindChildren(const QObject *o, const QRegExp &re)
+//{
+//    return o->findChildren<T>(re);
+//}
 #endif
 
 #endif //QT_DEPRECATED
@@ -501,8 +478,6 @@ template <class T>
 inline T qobject_cast(QObject *object)
 {
     typedef typename std::remove_cv<typename std::remove_pointer<T>::type>::type ObjType;
-    Q_STATIC_ASSERT_X(QtPrivate::HasLQT_OBJECT O_OBJECT_Macro<ObjType>::Value,
-                    "qobject_cast requires the type to have a LQT_OBJECT O_OBJECT macro");
     return static_cast<T>(ObjType::staticMetaObject.cast(object));
 }
 
@@ -510,8 +485,6 @@ template <class T>
 inline T qobject_cast(const QObject *object)
 {
     typedef typename std::remove_cv<typename std::remove_pointer<T>::type>::type ObjType;
-    Q_STATIC_ASSERT_X(QtPrivate::HasLQT_OBJECT O_OBJECT_Macro<ObjType>::Value,
-                      "qobject_cast requires the type to have a LQT_OBJECT O_OBJECT macro");
     return static_cast<T>(ObjType::staticMetaObject.cast(object));
 }
 

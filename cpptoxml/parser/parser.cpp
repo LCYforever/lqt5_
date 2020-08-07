@@ -303,6 +303,29 @@ bool Parser::skipUntilStatement()
   return false;
 }
 
+bool Parser::skipStatement()
+{
+	while (token_stream.lookAhead())
+	{
+		switch (token_stream.lookAhead())
+		{
+		case ';':
+			return true;
+		case '{':
+			skip('{', '}');
+			CHECK('}', '}');
+			if (token_stream.lookAhead() == ';')
+				token_stream.nextToken();
+			return true;
+
+		default:
+			token_stream.nextToken();
+		}
+	}
+
+	return false;
+}
+
 bool Parser::skip(int l, int r)
 {
   int count = 0;
@@ -398,9 +421,10 @@ bool Parser::parseTranslationUnit(TranslationUnitAST *&node)
       std::size_t startDecl = token_stream.cursor();
 
       DeclarationAST *declaration = 0;
-      if (parseDeclaration(declaration))
+      if (parseDeclaration(declaration) && declaration)
         {
-		  if(!ast->error)
+		  // 如果当前declaration出错，不添加该ast结点
+		  if(!declaration->error)
 			ast->declarations = snoc(ast->declarations, declaration, _M_pool);
         }
       else
@@ -543,7 +567,8 @@ bool Parser::parseLinkageBody(LinkageBodyAST *&node)
       DeclarationAST *declaration = 0;
       if (parseDeclaration(declaration))
         {
-          ast->declarations = snoc(ast->declarations, declaration, _M_pool);
+		  if(declaration && !declaration->error)
+			ast->declarations = snoc(ast->declarations, declaration, _M_pool);
         }
       else
         {
@@ -843,12 +868,25 @@ bool Parser::parseTemplateDeclaration(DeclarationAST *&node)
 
   TemplateDeclarationAST *ast = CreateNode<TemplateDeclarationAST>(_M_pool);
 
+  if (token_stream.lookAhead() == '<' && token_stream.lookAhead(1) == '>')
+  {
+	  token_stream.nextToken();
+	  ADVANCE('>', ">");
+  }
+
   const ListNode<TemplateParameterAST*> *params = 0;
   if (token_stream.lookAhead() == '<')
     {
       token_stream.nextToken();
-      if(!parseTemplateParameterList(params))
-		  ast->error = 1;
+	  if (!parseTemplateParameterList(params))
+	  {
+		  //解析模板参数列表出错，跳过当前statement
+		  ast->error = true;
+		  node = ast;
+		  ADVANCE('>', ">");
+		  skipStatement();
+		  return true;
+	  }
       ADVANCE('>', ">");
     }
 
@@ -964,6 +1002,11 @@ bool Parser::parseCvQualify(const ListNode<std::size_t> *&node)
     {
       node = snoc(node, token_stream.cursor(), _M_pool);
       token_stream.nextToken();
+	  if (token_stream.lookAhead() == '&' || token_stream.lookAhead() == Token_and)
+	  {
+		  node = snoc(node, token_stream.cursor(), _M_pool);
+		  token_stream.nextToken();
+	  }
     }
 
   return start != token_stream.cursor();
@@ -994,11 +1037,16 @@ bool Parser::parseSimpleTypeSpecifier(TypeSpecifierAST *&node,
         case Token_float:
         case Token_double:
         case Token_void:
+		//case Token_identifier:
           integrals = snoc(integrals, token_stream.cursor(), _M_pool);
           isIntegral = true;
           token_stream.nextToken();
           break;
-
+		case '&':
+		case '*':
+		  integrals = snoc(integrals, token_stream.cursor(), _M_pool);
+		  isIntegral = true;
+		  token_stream.nextToken();
         default:
           done = true;
         }
@@ -1057,8 +1105,16 @@ bool Parser::parseSimpleTypeSpecifier(TypeSpecifierAST *&node,
 bool Parser::parsePtrOperator(PtrOperatorAST *&node)
 {
   int tk = token_stream.lookAhead();
+  PtrOperatorAST *ast = CreateNode<PtrOperatorAST>(_M_pool);
 
-  if (tk != '&' && tk != '*'
+  //if (tk == Token_and)
+  //{   //&& rightvalue ref
+	 // ast->error = true;
+	 // node = ast;
+	 // tk = '&';
+  //}
+
+  if (tk != '&' && tk != '*' && tk!=Token_and
       && tk != Token_scope && tk != Token_identifier)
     {
       return false;
@@ -1066,12 +1122,13 @@ bool Parser::parsePtrOperator(PtrOperatorAST *&node)
 
   std::size_t start = token_stream.cursor();
   const char * text = token_stream.token(start).text + token_stream.token(start).position;
-  PtrOperatorAST *ast = CreateNode<PtrOperatorAST>(_M_pool);
+  // PtrOperatorAST *ast = CreateNode<PtrOperatorAST>(_M_pool);
 
   switch (token_stream.lookAhead())
     {
     case '&':
     case '*':
+	case Token_and:
       ast->op = token_stream.cursor();
       token_stream.nextToken();
       break;
@@ -1160,6 +1217,8 @@ bool Parser::parseDeclarator(DeclaratorAST *&node)
   PtrOperatorAST *ptrOp = 0;
   while (parsePtrOperator(ptrOp))
     {
+	  /*if (ptrOp->error)
+		  ast->error = true;*/
       ast->ptr_ops = snoc(ast->ptr_ops, ptrOp, _M_pool);
     }
 
@@ -1744,6 +1803,7 @@ bool Parser::parseParameterDeclarationList(const ListNode<ParameterDeclarationAS
           token_stream.rewind((int) start);
           return false;
         }
+	  param->error = node->element->error;
       node = snoc(node, param, _M_pool);
     }
 
@@ -1789,6 +1849,8 @@ bool Parser::parseParameterDeclaration(ParameterDeclarationAST *&node)
   ParameterDeclarationAST *ast = CreateNode<ParameterDeclarationAST>(_M_pool);
   ast->type_specifier = spec;
   ast->declarator = decl;
+  if (decl)
+	  ast->error = decl->error;
   ast->expression = expr;
 
   UPDATE_POS(ast, start, token_stream.cursor());
@@ -1911,12 +1973,18 @@ bool Parser::parseClassSpecifier(TypeSpecifierAST *&node)
         }
     }
 
+  if (token_stream.lookAhead() == '<')
+  {
+	  bool ret = false;
+  }
+
   if (token_stream.lookAhead() != '{')
     {
-
       token_stream.rewind((int) start);
       return false;
     }
+
+
 
   ADVANCE('{', "{");
 
@@ -1942,7 +2010,8 @@ bool Parser::parseClassSpecifier(TypeSpecifierAST *&node)
         }
 	  else
 		{ 
-		  if(!memSpec->error)
+		  // 如果成员出错，比如模板函数，就不添加当前ast结点
+		  if(memSpec&&!memSpec->error)
 			ast->member_specs = snoc(ast->member_specs, memSpec, _M_pool);
 		}
     }
@@ -3166,6 +3235,7 @@ bool Parser::parseDeclarationInternal(DeclarationAST *&node)
   if (parseName(name, true) && token_stream.lookAhead() == '(')
     {
       // no type specifier, maybe a constructor or a cast operator??
+	  // 没有类型声明，可能是构造函数或者类型转换操作
 
       token_stream.rewind((int) index);
 
@@ -3176,6 +3246,7 @@ bool Parser::parseDeclarationInternal(DeclarationAST *&node)
             {
             case ';':
               {
+				//Qtxxx(xxx);
                 token_stream.nextToken();
 
                 SimpleDeclarationAST *ast
@@ -3185,7 +3256,9 @@ bool Parser::parseDeclarationInternal(DeclarationAST *&node)
                 ast->function_specifiers = funSpec;
                 ast->init_declarators = snoc(ast->init_declarators,
                                              declarator, _M_pool);
-
+				if (declarator && declarator->declarator && declarator->declarator->parameter_declaration_clause
+					&&declarator->declarator->parameter_declaration_clause->parameter_declarations)
+					ast->error = declarator->declarator->parameter_declaration_clause->parameter_declarations->element->error;
                 UPDATE_POS(ast, start, token_stream.cursor());
                 node = ast;
 				char* qs = Parser::tokenText(ast).toLatin1().data();
@@ -3194,9 +3267,11 @@ bool Parser::parseDeclarationInternal(DeclarationAST *&node)
 
             case ':':
               {
+				//Qtxxx(xxx):xxx(xx),xxx(xx){}
                 CtorInitializerAST *ctorInit = 0;
                 StatementAST *funBody = 0;
 
+				//parse ctor-initializer. Constructor initializer list
                 if (parseCtorInitializer(ctorInit)
                     && parseFunctionBody(funBody))
                   {
@@ -3207,7 +3282,9 @@ bool Parser::parseDeclarationInternal(DeclarationAST *&node)
                     ast->function_specifiers = funSpec;
                     ast->init_declarator = declarator;
                     ast->function_body = funBody;
-
+					if (declarator && declarator->declarator && declarator->declarator->parameter_declaration_clause
+						&&declarator->declarator->parameter_declaration_clause->parameter_declarations)
+						ast->error = declarator->declarator->parameter_declaration_clause->parameter_declarations->element->error;
                     UPDATE_POS(ast, start, token_stream.cursor());
                     node = ast;
 					char* qs = Parser::tokenText(ast).toLatin1().data();
@@ -3218,6 +3295,7 @@ bool Parser::parseDeclarationInternal(DeclarationAST *&node)
 
             case '{':
               {
+				//Qtxxx(xxx){}
                 StatementAST *funBody = 0;
                 if (parseFunctionBody(funBody))
                   {
@@ -3228,6 +3306,9 @@ bool Parser::parseDeclarationInternal(DeclarationAST *&node)
                     ast->function_specifiers = funSpec;
                     ast->init_declarator = declarator;
                     ast->function_body = funBody;
+					if (declarator && declarator->declarator && declarator->declarator->parameter_declaration_clause
+						&&declarator->declarator->parameter_declaration_clause->parameter_declarations)
+						ast->error = declarator->declarator->parameter_declaration_clause->parameter_declarations->element->error;
 
                     UPDATE_POS(ast, start, token_stream.cursor());
                     node = ast;
@@ -3315,6 +3396,7 @@ bool Parser::parseDeclarationInternal(DeclarationAST *&node)
         {
         case ';':
           {
+			// 只有声明没有实现
             token_stream.nextToken();
             SimpleDeclarationAST *ast
               = CreateNode<SimpleDeclarationAST>(_M_pool);
@@ -3327,6 +3409,8 @@ bool Parser::parseDeclarationInternal(DeclarationAST *&node)
 
             UPDATE_POS(ast, start, token_stream.cursor());
             node = ast;
+			if (declarators && declarators->element)
+				node->error = declarators->element->error;
 			char* qs = Parser::tokenText(ast).toLatin1().data();
           }
           return true;
@@ -3354,6 +3438,9 @@ bool Parser::parseDeclarationInternal(DeclarationAST *&node)
 
                 UPDATE_POS(ast, start, token_stream.cursor());
                 node = ast;
+				if (decl && decl->declarator && decl->declarator->parameter_declaration_clause
+					&&decl->declarator->parameter_declaration_clause->parameter_declarations)
+					node->error = decl->declarator->parameter_declaration_clause->parameter_declarations->element->error;
 				char* qs = Parser::tokenText(ast).toLatin1().data();
                 return true;
               }

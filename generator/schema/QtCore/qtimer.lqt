@@ -55,7 +55,7 @@ QT_BEGIN_NAMESPACE
 
 class Q_CORE_EXPORT QTimer : public QObject
 {
-    LQT_OBJECT O_OBJECT
+    LQT_OBJECT Q_OBJECT
     Q_PROPERTY(bool singleShot READ isSingleShot WRITE setSingleShot)
     Q_PROPERTY(int interval READ interval WRITE setInterval)
     Q_PROPERTY(int remainingTime READ remainingTime)
@@ -151,17 +151,10 @@ public:
     {
         //compilation error if the slot has arguments.
         typedef QtPrivate::FunctionPointer<Func1> SlotType;
-        Q_STATIC_ASSERT_X(int(SlotType::ArgumentCount) <= 0,  "The slot must not have any arguments.");
 
         singleShotImpl(interval, timerType, context,
                        new QtPrivate::QFunctorSlotObject<Func1, 0,
                             typename QtPrivate::List_Left<void, 0>::Value, void>(std::move(slot)));
-    }
-
-    template <typename ... Args>
-    QMetaObject::Connection callOnTimeout(Args && ...args)
-    {
-        return QObject::connect(this, &QTimer::timeout, std::forward<Args>(args)... );
     }
 
 #endif
@@ -210,35 +203,6 @@ public:
 
 protected:
     void timerEvent(QTimerEvent *) override;
-
-private:
-    Q_DISABLE_COPY(QTimer)
-
-    inline int startTimer(int){ return -1;}
-    inline void killTimer(int){}
-
-    static Q_DECL_CONSTEXPR Qt::TimerType defaultTypeFor(int msecs) Q_DECL_NOTHROW
-    { return msecs >= 2000 ? Qt::CoarseTimer : Qt::PreciseTimer; }
-    static void singleShotImpl(int msec, Qt::TimerType timerType,
-                               const QObject *receiver, QtPrivate::QSlotObjectBase *slotObj);
-
-#if QT_HAS_INCLUDE(<chrono>)
-    static Qt::TimerType defaultTypeFor(std::chrono::milliseconds interval)
-    { return defaultTypeFor(int(interval.count())); }
-
-    static void singleShotImpl(std::chrono::milliseconds interval, Qt::TimerType timerType,
-                               const QObject *receiver, QtPrivate::QSlotObjectBase *slotObj)
-    {
-        singleShotImpl(int(interval.count()),
-                       timerType, receiver, slotObj);
-    }
-#endif
-
-    int id, inter, del;
-    uint single : 1;
-    uint nulltimer : 1;
-    uint type : 2;
-    // reserved : 28
 };
 
 inline void QTimer::setSingleShot(bool asingleShot) { single = asingleShot; }

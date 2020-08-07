@@ -56,7 +56,7 @@ class QStateMachinePrivate;
 class QAbstractAnimation;
 class Q_CORE_EXPORT QStateMachine : public QState
 {
-    LQT_OBJECT O_OBJECT
+    LQT_OBJECT Q_OBJECT
     Q_PROPERTY(QString errorString READ errorString)
     Q_PROPERTY(QState::RestorePolicy globalRestorePolicy READ globalRestorePolicy WRITE setGlobalRestorePolicy)
     Q_PROPERTY(bool running READ isRunning WRITE setRunning NOTIFY runningChanged)
@@ -170,16 +170,6 @@ protected:
 protected:
     QStateMachine(QStateMachinePrivate &dd, QObject *parent);
 
-private:
-    Q_DISABLE_COPY(QStateMachine)
-    Q_DECLARE_PRIVATE(QStateMachine)
-    Q_PRIVATE_SLOT(d_func(), void _q_start())
-    Q_PRIVATE_SLOT(d_func(), void _q_process())
-#if QT_CONFIG(animation)
-    Q_PRIVATE_SLOT(d_func(), void _q_animationFinished())
-#endif
-    Q_PRIVATE_SLOT(d_func(), void _q_startDelayedEventTimer(int, int))
-    Q_PRIVATE_SLOT(d_func(), void _q_killDelayedEventTimer(int, int))
 };
 
 QT_END_NAMESPACE

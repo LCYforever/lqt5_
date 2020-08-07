@@ -51,7 +51,7 @@ class QItemSelection;
 
 class Q_CORE_EXPORT QAbstractProxyModel : public QAbstractItemModel
 {
-    LQT_OBJECT O_OBJECT
+    LQT_OBJECT Q_OBJECT
     Q_PROPERTY(QAbstractItemModel* sourceModel READ sourceModel WRITE setSourceModel NOTIFY sourceModelChanged)
 
 public:
@@ -107,11 +107,6 @@ protected Q_SLOTS:
 
 protected:
     QAbstractProxyModel(QAbstractProxyModelPrivate &, QObject *parent);
-
-private:
-    Q_DECLARE_PRIVATE(QAbstractProxyModel)
-    Q_DISABLE_COPY(QAbstractProxyModel)
-    Q_PRIVATE_SLOT(d_func(), void _q_sourceModelDestroyed())
 };
 
 QT_END_NAMESPACE

@@ -50,7 +50,7 @@ class QSignalMapperPrivate;
 
 class Q_CORE_EXPORT QSignalMapper : public QObject
 {
-    LQT_OBJECT O_OBJECT
+    LQT_OBJECT Q_OBJECT
     Q_DECLARE_PRIVATE(QSignalMapper)
 public:
     QT_DEPRECATED explicit QSignalMapper(QObject *parent = nullptr);
@@ -76,10 +76,6 @@ Q_SIGNALS:
 public Q_SLOTS:
     void map();
     void map(QObject *sender);
-
-private:
-    Q_DISABLE_COPY(QSignalMapper)
-    Q_PRIVATE_SLOT(d_func(), void _q_senderDestroyed())
 };
 
 QT_END_NAMESPACE

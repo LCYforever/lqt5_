@@ -513,36 +513,6 @@ public:
 #endif
     void ref() const Q_DECL_NOTHROW { d->weakref.ref(); d->strongref.ref(); }
 
-    inline void internalSet(Data *o, T *actual)
-    {
-        if (o) {
-            // increase the strongref, but never up from zero
-            // or less (-1 is used by QWeakPointer on untracked QObject)
-            int tmp = o->strongref.load();
-            while (tmp > 0) {
-                // try to increment from "tmp" to "tmp + 1"
-                if (o->strongref.testAndSetRelaxed(tmp, tmp + 1))
-                    break;   // succeeded
-                tmp = o->strongref.load();  // failed, try again
-            }
-
-            if (tmp > 0) {
-                o->weakref.ref();
-            } else {
-                o->checkQObjectShared(actual);
-                o = nullptr;
-            }
-        }
-
-        qSwap(d, o);
-        qSwap(this->value, actual);
-        if (!d || d->strongref.load() == 0)
-            this->value = nullptr;
-
-        // dereference saved data
-        deref(o);
-    }
-
     Type *value;
     Data *d;
 };
@@ -707,11 +677,7 @@ template <class T>
 class QEnableSharedFromThis
 {
 protected:
-#ifdef Q_COMPILER_DEFAULT_MEMBERS
-    QEnableSharedFromThis() = default;
-#else
     Q_DECL_CONSTEXPR QEnableSharedFromThis() {}
-#endif
     QEnableSharedFromThis(const QEnableSharedFromThis &) {}
     QEnableSharedFromThis &operator=(const QEnableSharedFromThis &) { return *this; }
 

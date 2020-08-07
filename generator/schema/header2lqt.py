@@ -25,7 +25,7 @@ def convertHeader2Lqt(dir1, module, dir2):
                     if re.search(r'#\ *include', line):
                          line = parseInclude(line)
                     elif line.find("Q_OBJECT"):
-                        line = line.replace("Q_OBJECT", "LQT_OBJECT O_OBJECT")  # Q_OBJECT => LQT_OBJECT O_OBJECT
+                        line = line.replace("Q_OBJECT", "LQT_OBJECT Q_OBJECT")  # Q_OBJECT => LQT_OBJECT O_OBJECT
                     elif line.find("= default"):
                         line = line.replace("= default", "// = default")
                     out_file.write(line)

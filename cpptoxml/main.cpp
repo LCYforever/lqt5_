@@ -540,9 +540,9 @@ int main (int argc, char **argv) {
 	inclist << (QDir::toNativeSeparators(qtdir));
 
 	QStringList qts;
-	/*qts << "QtXml" << "QtNetwork" << "QtCore" << "QtGui"
-		<<"QtOpenGL" << "QtWebKit"<< "QtScript" << "QtSvg";*/
-	qts << "QtCore" << "QtGui";
+	qts << "QtXml" << "QtNetwork" << "QtCore" << "QtGui"
+		<<"QtOpenGL" << "QtWebKit"<< "QtScript" << "QtSvg";
+	//qts << "QtCore" << "QtGui";
 
 	Q_FOREACH(const QString& lib, qts) {
 		inclist << QDir::toNativeSeparators(qtdir + "/" + lib);
@@ -556,7 +556,7 @@ int main (int argc, char **argv) {
 	pp.processFile(sourceName);
 	QByteArray contents = pp.result();
 	
-	qDebug() << pp.macroNames();
+	if(debug) qDebug() << pp.macroNames();
 	if(debug) qDebug() << contents;
 	if(debug) QTextStream(stdout) << contents;
 	

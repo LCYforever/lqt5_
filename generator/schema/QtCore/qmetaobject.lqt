@@ -172,10 +172,10 @@ public:
     static inline QMetaMethod fromSignal(PointerToMemberFunction signal)
     {
         typedef QtPrivate::FunctionPointer<PointerToMemberFunction> SignalType;
-        Q_STATIC_ASSERT_X(QtPrivate::HasLQT_OBJECT O_OBJECT_Macro<typename SignalType::Object>::Value,
-                          "No LQT_OBJECT O_OBJECT in the class with the signal");
-        return fromSignalImpl(&SignalType::Object::staticMetaObject,
-                              reinterpret_cast<void **>(&signal));
+        //Q_STATIC_ASSERT_X(QtPrivate::HasLQT_OBJECT Q_OBJECT_Macro<typename SignalType::Object>::Value,
+        //                  "No LQT_OBJECT Q_OBJECT in the class with the signal");
+        //return fromSignalImpl(&SignalType::Object::staticMetaObject,
+        //                      reinterpret_cast<void **>(&signal));
     }
 
 private:

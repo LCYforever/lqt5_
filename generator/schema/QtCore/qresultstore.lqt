@@ -43,7 +43,7 @@
 #include <QtCore/qmap.lqt>
 #include <QtCore/qdebug.lqt>
 
-QT_REQUIRE_CONFIG(future);
+//QT_REQUIRE_CONFIG(future);
 
 QT_BEGIN_NAMESPACE
 

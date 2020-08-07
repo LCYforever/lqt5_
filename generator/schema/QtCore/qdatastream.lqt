@@ -299,33 +299,6 @@ QDataStream &readAssociativeContainer(QDataStream &s, Container &c)
     return s;
 }
 
-template <typename Container>
-QDataStream &writeSequentialContainer(QDataStream &s, const Container &c)
-{
-    s << quint32(c.size());
-    for (const typename Container::value_type &t : c)
-        s << t;
-
-    return s;
-}
-
-template <typename Container>
-QDataStream &writeAssociativeContainer(QDataStream &s, const Container &c)
-{
-    s << quint32(c.size());
-    // Deserialization should occur in the reverse order.
-    // Otherwise, value() will return the least recently inserted
-    // value instead of the most recently inserted one.
-    auto it = c.constEnd();
-    auto begin = c.constBegin();
-    while (it != begin) {
-        --it;
-        s << it.key() << it.value();
-    }
-
-    return s;
-}
-
 } // QtPrivate namespace
 
 /*****************************************************************************
@@ -382,11 +355,7 @@ inline QDataStream &operator>>(QDataStream &s, QList<T> &l)
     return QtPrivate::readArrayBasedContainer(s, l);
 }
 
-template <typename T>
-inline QDataStream &operator<<(QDataStream &s, const QList<T> &l)
-{
-    return QtPrivate::writeSequentialContainer(s, l);
-}
+
 
 template <typename T>
 inline QDataStream &operator>>(QDataStream &s, QLinkedList<T> &l)
@@ -394,11 +363,6 @@ inline QDataStream &operator>>(QDataStream &s, QLinkedList<T> &l)
     return QtPrivate::readListBasedContainer(s, l);
 }
 
-template <typename T>
-inline QDataStream &operator<<(QDataStream &s, const QLinkedList<T> &l)
-{
-    return QtPrivate::writeSequentialContainer(s, l);
-}
 
 template<typename T>
 inline QDataStream &operator>>(QDataStream &s, QVector<T> &v)
@@ -406,11 +370,7 @@ inline QDataStream &operator>>(QDataStream &s, QVector<T> &v)
     return QtPrivate::readArrayBasedContainer(s, v);
 }
 
-template<typename T>
-inline QDataStream &operator<<(QDataStream &s, const QVector<T> &v)
-{
-    return QtPrivate::writeSequentialContainer(s, v);
-}
+
 
 template <typename T>
 inline QDataStream &operator>>(QDataStream &s, QSet<T> &set)
@@ -418,11 +378,6 @@ inline QDataStream &operator>>(QDataStream &s, QSet<T> &set)
     return QtPrivate::readListBasedContainer(s, set);
 }
 
-template <typename T>
-inline QDataStream &operator<<(QDataStream &s, const QSet<T> &set)
-{
-    return QtPrivate::writeSequentialContainer(s, set);
-}
 
 template <class Key, class T>
 inline QDataStream &operator>>(QDataStream &s, QHash<Key, T> &hash)
@@ -430,11 +385,6 @@ inline QDataStream &operator>>(QDataStream &s, QHash<Key, T> &hash)
     return QtPrivate::readAssociativeContainer(s, hash);
 }
 
-template <class Key, class T>
-inline QDataStream &operator<<(QDataStream &s, const QHash<Key, T> &hash)
-{
-    return QtPrivate::writeAssociativeContainer(s, hash);
-}
 
 template <class Key, class T>
 inline QDataStream &operator>>(QDataStream &s, QMap<Key, T> &map)
@@ -442,11 +392,6 @@ inline QDataStream &operator>>(QDataStream &s, QMap<Key, T> &map)
     return QtPrivate::readAssociativeContainer(s, map);
 }
 
-template <class Key, class T>
-inline QDataStream &operator<<(QDataStream &s, const QMap<Key, T> &map)
-{
-    return QtPrivate::writeAssociativeContainer(s, map);
-}
 
 #ifndef QT_NO_DATASTREAM
 template <class T1, class T2>

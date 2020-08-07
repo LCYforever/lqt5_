@@ -43,9 +43,9 @@
 #if 0
 // syncqt can not handle the templates in this file, and it doesn't need to
 // process them anyway because they are internal.
-#pragma qt_class(QStringBuilder)
-#pragma qt_sync_stop_processing
-#endif
+//#pragma qt_class(QStringBuilder)
+//#pragma qt_sync_stop_processing
+//#endif
 
 #include <QtCore/qstring.lqt>
 #include <QtCore/qbytearray.lqt>
@@ -294,12 +294,7 @@ template <> struct QConcatenable<QStringView> : private QAbstractConcatenable
     typedef QString ConvertTo;
     enum { ExactSize = true };
     static int size(QStringView a) { return a.length(); }
-    static inline void appendTo(QStringView a, QChar *&out)
-    {
-        const auto n = a.size();
-        memcpy(out, a.data(), sizeof(QChar) * n);
-        out += n;
-    }
+    static inline void appendTo(QStringView a, QChar *&out);
 };
 
 template <int N> struct QConcatenable<const char[N]> : private QAbstractConcatenable

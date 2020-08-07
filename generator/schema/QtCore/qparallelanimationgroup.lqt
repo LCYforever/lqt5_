@@ -49,7 +49,7 @@ QT_BEGIN_NAMESPACE
 class QParallelAnimationGroupPrivate;
 class Q_CORE_EXPORT QParallelAnimationGroup : public QAnimationGroup
 {
-    LQT_OBJECT O_OBJECT
+    LQT_OBJECT Q_OBJECT
 
 public:
     QParallelAnimationGroup(QObject *parent = nullptr);
@@ -64,11 +64,6 @@ protected:
     void updateCurrentTime(int currentTime) override;
     void updateState(QAbstractAnimation::State newState, QAbstractAnimation::State oldState) override;
     void updateDirection(QAbstractAnimation::Direction direction) override;
-
-private:
-    Q_DISABLE_COPY(QParallelAnimationGroup)
-    Q_DECLARE_PRIVATE(QParallelAnimationGroup)
-    Q_PRIVATE_SLOT(d_func(), void _q_uncontrolledAnimationFinished())
 };
 
 QT_END_NAMESPACE

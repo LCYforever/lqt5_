@@ -47,7 +47,7 @@
 #include <QtCore/qlist.lqt>
 #include <QtCore/qabstractitemmodel.lqt>
 
-QT_REQUIRE_CONFIG(itemmodel);
+//QT_REQUIRE_CONFIG(itemmodel);
 
 QT_BEGIN_NAMESPACE
 
@@ -56,19 +56,17 @@ class Q_CORE_EXPORT QItemSelectionRange
 
 public:
     inline QItemSelectionRange() : tl(), br() {}
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    // ### Qt 6: remove them all, the compiler-generated ones are fine
-    inline QItemSelectionRange(const QItemSelectionRange &other)
-        : tl(other.tl), br(other.br) {}
-# ifdef Q_COMPILER_RVALUE_REFS
-    QItemSelectionRange(QItemSelectionRange &&other) Q_DECL_NOTHROW
-        : tl(std::move(other.tl)), br(std::move(other.br)) {}
-    QItemSelectionRange &operator=(QItemSelectionRange &&other) Q_DECL_NOTHROW
-    { tl = std::move(other.tl); br = std::move(other.br); return *this; }
-# endif
-    QItemSelectionRange &operator=(const QItemSelectionRange &other)
-    { tl = other.tl; br = other.br; return *this; }
-#endif // Qt < 6
+// #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+//     // ### Qt 6: remove them all, the compiler-generated ones are fine
+    inline QItemSelectionRange(const QItemSelectionRange &other);
+// # ifdef Q_COMPILER_RVALUE_REFS
+//     QItemSelectionRange(QItemSelectionRange &&other) Q_DECL_NOTHROW
+//         : tl(std::move(other.tl)), br(std::move(other.br)) {}
+//     QItemSelectionRange &operator=(QItemSelectionRange &&other) Q_DECL_NOTHROW
+//     { tl = std::move(other.tl); br = std::move(other.br); return *this; }
+// # endif
+    QItemSelectionRange &operator=(const QItemSelectionRange &other);
+// #endif // Qt < 6
     QItemSelectionRange(const QModelIndex &topL, const QModelIndex &bottomR) : tl(topL), br(bottomR) {}
     explicit QItemSelectionRange(const QModelIndex &index) : tl(index), br(tl) {}
 
@@ -128,9 +126,8 @@ public:
 
     QModelIndexList indexes() const;
 
-private:
-    QPersistentModelIndex tl, br;
 };
+
 Q_DECLARE_TYPEINFO(QItemSelectionRange, Q_MOVABLE_TYPE);
 
 class QItemSelection;
@@ -138,7 +135,7 @@ class QItemSelectionModelPrivate;
 
 class Q_CORE_EXPORT QItemSelectionModel : public QObject
 {
-    LQT_OBJECT O_OBJECT
+    LQT_OBJECT Q_OBJECT
     Q_PROPERTY(QAbstractItemModel *model READ model WRITE setModel NOTIFY modelChanged)
     Q_PROPERTY(bool hasSelection READ hasSelection NOTIFY selectionChanged STORED false DESIGNABLE false)
     Q_PROPERTY(QModelIndex currentIndex READ currentIndex NOTIFY currentChanged STORED false DESIGNABLE false)
@@ -213,20 +210,12 @@ protected:
     QItemSelectionModel(QItemSelectionModelPrivate &dd, QAbstractItemModel *model);
     void emitSelectionChanged(const QItemSelection &newSelection, const QItemSelection &oldSelection);
 
-private:
-    Q_DISABLE_COPY(QItemSelectionModel)
-    Q_PRIVATE_SLOT(d_func(), void _q_columnsAboutToBeRemoved(const QModelIndex&, int, int))
-    Q_PRIVATE_SLOT(d_func(), void _q_rowsAboutToBeRemoved(const QModelIndex&, int, int))
-    Q_PRIVATE_SLOT(d_func(), void _q_columnsAboutToBeInserted(const QModelIndex&, int, int))
-    Q_PRIVATE_SLOT(d_func(), void _q_rowsAboutToBeInserted(const QModelIndex&, int, int))
-    Q_PRIVATE_SLOT(d_func(), void _q_layoutAboutToBeChanged(const QList<QPersistentModelIndex> &parents = QList<QPersistentModelIndex>(), QAbstractItemModel::LayoutChangeHint hint = QAbstractItemModel::NoHint))
-    Q_PRIVATE_SLOT(d_func(), void _q_layoutChanged(const QList<QPersistentModelIndex> &parents = QList<QPersistentModelIndex>(), QAbstractItemModel::LayoutChangeHint hint = QAbstractItemModel::NoHint))
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QItemSelectionModel::SelectionFlags)
 
 // dummy implentation of qHash() necessary for instantiating QList<QItemSelectionRange>::toSet() with MSVC
-inline uint qHash(const QItemSelectionRange &) { return 0; }
+// inline uint qHash(const QItemSelectionRange &) { return 0; }
 
 #ifdef Q_CC_MSVC
 
@@ -262,11 +251,11 @@ public:
                       const QItemSelectionRange &other,
                       QItemSelection *result);
 };
-Q_DECLARE_SHARED_NOT_MOVABLE_UNTIL_QT6(QItemSelection)
+//Q_DECLARE_SHARED_NOT_MOVABLE_UNTIL_QT6(QItemSelection)
 
-#ifndef QT_NO_DEBUG_STREAM
-Q_CORE_EXPORT QDebug operator<<(QDebug, const QItemSelectionRange &);
-#endif
+//#ifndef QT_NO_DEBUG_STREAM
+//Q_CORE_EXPORT QDebug operator<<(QDebug, const QItemSelectionRange &);
+//#endif
 
 QT_END_NAMESPACE
 

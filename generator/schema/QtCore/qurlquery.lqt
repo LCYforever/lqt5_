@@ -60,12 +60,12 @@ public:
     QUrlQuery();
     explicit QUrlQuery(const QUrl &url);
     explicit QUrlQuery(const QString &queryString);
-    QUrlQuery(std::initializer_list<QPair<QString, QString>> list)
-        : QUrlQuery()
-    {
-        for (const QPair<QString, QString> &item : list)
-            addQueryItem(item.first, item.second);
-    }
+    //QUrlQuery(std::initializer_list<QPair<QString, QString>> list)
+    //    : QUrlQuery()
+    //{
+    //    for (const QPair<QString, QString> &item : list)
+    //        addQueryItem(item.first, item.second);
+    //}
 
     QUrlQuery(const QUrlQuery &other);
     QUrlQuery &operator=(const QUrlQuery &other);
